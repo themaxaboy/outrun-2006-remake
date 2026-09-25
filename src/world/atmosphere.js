@@ -178,7 +178,7 @@ export class Atmosphere {
     const I = Math.max(sc.x, sc.y, sc.z)
     this.sun.color.setRGB(sc.x / I, sc.y / I, sc.z / I)
     // below the horizon the "sun" light fades out (dusk/twilight use the moon/sky only)
-    this.sun.intensity = I * clamp((L.sunDir.y + 0.03) * 12, 0, 1)
+    this.sun.intensity = I * 1.35 * clamp((L.sunDir.y + 0.03) * 12, 0, 1)
     this.hemi.color.setRGB(L.zenith.x, L.zenith.y, L.zenith.z).lerp(new THREE.Color(L.horizon.x, L.horizon.y, L.horizon.z), 0.5)
     const hc = this.hemi.color
     const hm = Math.max(hc.r, hc.g, hc.b) || 1
@@ -186,7 +186,9 @@ export class Atmosphere {
     this.hemi.groundColor.setRGB(L.ground.x, L.ground.y, L.ground.z)
     // IBL (scene.environment) already provides sky ambient; the hemi light only adds a little ground bounce
     this.hemi.intensity = L.hemiI * 0.3
-    this.scene.environmentIntensity = L.envI
+    // sky IBL is kept dim relative to the sun (real skies are ~1/20 of the solar disc's illuminance);
+    // glossy materials (car paint, glass) raise their own envMapIntensity to keep crisp reflections
+    this.scene.environmentIntensity = L.envI * 0.5
   }
 
   bakeEnvironment() {

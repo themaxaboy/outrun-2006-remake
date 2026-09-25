@@ -102,7 +102,6 @@ export class Gantries {
       const tex = textTexture([text], { w: 1024, h: 256, bg: '#0a5a2a', font: 'italic 800 84px sans-serif', align })
       const m = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.92, W * 0.92 / 4), this._signMat(tex))
       m.position.set(x, H + 1.9, 0.3)
-      m.rotation.y = Math.PI
       g.add(m)
     }
     mk('◀  ' + left, -W * 0.5, 'left')

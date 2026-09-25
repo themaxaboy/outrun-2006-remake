@@ -29,9 +29,11 @@ import { HUD } from '../hud/hud.js'
 import { RaceTimer } from './timer.js'
 import { Score } from './score.js'
 import { WorldExtras } from '../world/extras.js'
+import { Traffic } from '../traffic/traffic.js'
+import { buildFallbackTrafficModels } from '../traffic/fallbackModels.js'
 
 const carBuilders = import.meta.glob('../vehicle/model/CarBuilder.js')
-const trafficModules = import.meta.glob('../traffic/traffic.js')
+const trafficModelModules = import.meta.glob('../traffic/trafficModels.js')
 const audioModules = import.meta.glob('../audio/audio.js')
 
 const STORAGE_KEY = 'or2r.settings.v1'
@@ -79,7 +81,7 @@ export class Game {
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.NoToneMapping
     renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.shadowMap.type = THREE.PCFShadowMap
     renderer.info.autoReset = false
     this.renderer = renderer
     this.gpu = gpuInfo(renderer)
@@ -144,6 +146,16 @@ export class Game {
       } catch (e) { console.warn('audio unavailable', e) }
     }
 
+    onProgress(0.75, 'traffic')
+    let models = null
+    const tm = trafficModelModules['../traffic/trafficModels.js']
+    if (tm) {
+      try { models = (await tm()).buildTrafficModels({ quality: this.preset.id === 'low' ? 'low' : 'high' }) } catch (e) { console.warn('traffic models failed', e) }
+    }
+    if (!models || !models.size) models = buildFallbackTrafficModels()
+    this.traffic = new Traffic(this.scene, this.atmosphere, models, { density: this.preset.trafficScale })
+    this.traffic.setShadows(this.preset.shadows)
+
     onProgress(0.8, 'car')
     this.carDef = getCar(params.car || 'aurora')
     await this._setRig(this.carDef, this.carDef.colors[0], 'metallic')
@@ -185,7 +197,10 @@ export class Game {
       }
     }
     if (!rig) rig = buildPlaceholderCar(def, color)
-    for (const m of rig.materials) this.atmosphere.applyFog(m)
+    for (const m of rig.materials) {
+      this.atmosphere.applyFog(m)
+      if (m.envMapIntensity !== undefined) m.envMapIntensity = (m.userData.baseEnvI ??= m.envMapIntensity) * 2
+    }
     rig.setShadow?.(this.preset.shadows)
     this.rig = rig
     this.scene.add(rig.root)
@@ -201,6 +216,7 @@ export class Game {
     this.camera.updateProjectionMatrix()
     this.dynres.setPreset(p)
     this.rig?.setShadow?.(p.shadows)
+    this.traffic?.setShadows(p.shadows)
     this.blob && (this.blob.material.opacity = p.shadows ? 0.35 : 0.6)
     this.resize()
   }
@@ -246,7 +262,10 @@ export class Game {
     this.prev = {}
     snapshot(this.car, this.course, this.prev)
     this.extras.reset(this.route)
-    if (this.traffic) this.traffic.reset(this.route, this.mode !== 'timeattack')
+    if (this.traffic) {
+      this.traffic.density = this.preset.trafficScale
+      this.traffic.reset(this.route, this.mode !== 'timeattack' && !params.noTraffic, startS, this.preset.farFade[1] + 40)
+    }
     this.hud.setStage(this.stageNo, this.course.stage.name, this.route.visited, this.course.stage.id)
     this.hud.setTransmission(manual)
   }
@@ -350,7 +369,11 @@ export class Game {
 
     collideWalls(car, course)
     collideProps(car, this.chunks.collidersNear(course, car.s))
-    if (this.traffic) this.traffic.step(dt, car, course)
+    if (this.traffic) {
+      this.traffic.step(dt, car, course)
+      for (const e of this.traffic.events) this._onTrafficEvent(e)
+      this.traffic.events.length = 0
+    }
 
     if (car.s >= course.length) {
       if (course.goal) car.s = course.length - 0.01
@@ -462,6 +485,25 @@ export class Game {
       bestDrift: this.score.bestDrift,
       nearMisses: this.score.nearMisses,
       distance: this.car.distance,
+    }
+  }
+
+  _onTrafficEvent(e) {
+    const racing = this.state === 'race'
+    switch (e.type) {
+      case 'pass':
+        this.audio?.sfx?.('pass', { pan: e.pan, speed: e.speed })
+        break
+      case 'nearMiss':
+        if (racing) {
+          const pts = this.score.nearMiss()
+          this.hud.banner('NEAR MISS', `+${pts.toLocaleString('en-US')}`, 1.1, 'good small')
+        }
+        this.audio?.sfx?.('nearMiss', { pan: e.pan })
+        break
+      case 'slipPass':
+        if (racing) this.score.slipPass()
+        break
     }
   }
 
@@ -605,6 +647,7 @@ export class Game {
     this.mats.propMat.userData.uniforms.uWind.value = look.wind
     this.mats.roadMat.userData.uniforms.uWet.value = look.wet
     this.extras.update(frameDt, this.camera, poser, car, this.course, look)
+    this.traffic?.render(alpha, look.night)
   }
 
   _updateHud(dt) {

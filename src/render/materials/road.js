@@ -13,10 +13,10 @@ export function createRoadMaterial(tex) {
     map: albedo,
     roughnessMap: hr,
     bumpMap: hr,
-    bumpScale: 0.6,
+    bumpScale: 0.25,
     roughness: 1,
     metalness: 0,
-    envMapIntensity: 0.45,
+    envMapIntensity: 0.6,
   })
   const uniforms = { uWet: { value: 0 }, uTime: { value: 0 } }
   mat.userData.uniforms = uniforms
@@ -93,7 +93,7 @@ diffuseColor.rgb *= 1.0 - uWet * 0.38 * (1.0 - markMask);
       .replace(
         '#include <roughnessmap_fragment>',
         `#include <roughnessmap_fragment>
-roughnessFactor = mix(roughnessFactor, 0.55, markMask);
+roughnessFactor = mix(roughnessFactor, 0.72, markMask);
 roughnessFactor = mix(roughnessFactor, 0.12 + 0.2 * texelRoughness.r, uWet);`,
       )
   }
