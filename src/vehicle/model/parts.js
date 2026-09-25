@@ -184,6 +184,12 @@ function planSlab(acc, group, outline, y0, y1, { uvScale = 1 } = {}) {
   const rows = outline.map(([x, z]) => [[x, y0, z], [x, y1, z]])
   gridPart(acc, group, rows, { flip: false, uvScale })
   acc.mirrorX(m)
+  // close the rear end
+  const [xe, ze] = outline[n - 1]
+  const a = acc.vert(g, -xe, y0, ze, 0, 0, 1, 0, 0), b = acc.vert(g, xe, y0, ze, 0, 0, 1, 1, 0)
+  const c = acc.vert(g, -xe, y1, ze, 0, 0, 1, 0, 1), d = acc.vert(g, xe, y1, ze, 0, 0, 1, 1, 1)
+  acc.tri(g, a, b, c)
+  acc.tri(g, b, d, c)
 }
 
 export function splitter(ctx, f) {
@@ -234,13 +240,13 @@ export function skirts(ctx, f) {
     ])
   }
   const m = acc.mark()
-  gridPart(acc, f.g || 'carbon', rows)
+  gridPart(acc, f.g || 'carbon', rows, { closed: true })
   capLoop(acc, f.g || 'carbon', rows[0], [0, 0, -1])
   capLoop(acc, f.g || 'carbon', rows[rows.length - 1], [0, 0, 1])
   acc.mirrorX(m)
 }
 
-function extrudeX(acc, group, pts2 /* [[z, y]] */, x0, thick, { boxUV = 1 } = {}) {
+export function extrudeX(acc, group, pts2 /* [[z, y]] */, x0, thick, { boxUV = 1 } = {}) {
   const shape = new THREE.Shape(pts2.map(([z, y]) => new THREE.Vector2(z, y)))
   const geo = new THREE.ExtrudeGeometry(shape, { depth: thick, bevelEnabled: false, curveSegments: 6 })
   // shape x → car z, shape y → car y, extrusion z → car -x
@@ -265,7 +271,9 @@ export function diffuser(ctx, f) {
     for (let j = 0; j <= KX; j++) row.push([-hw + (2 * hw * j) / KX, ceil(z), z])
     rows.push(row)
   }
+  const mk = acc.mark()
   gridPart(acc, g, rows)
+  acc.backfaces(mk, g)
   const n = q.detail ? f.fins ?? 5 : Math.min(3, f.fins ?? 5)
   const t = 0.012
   for (let i = 0; i < n; i++) {

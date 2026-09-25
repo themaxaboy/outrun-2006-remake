@@ -1,6 +1,5 @@
 // CarRig: the renderable car handed to the game. root is positioned by the game every frame;
 // update() animates wheels (spin + steer), light emissive levels and a little body squat/dive.
-import * as THREE from 'three'
 import { applyPaintFinish } from './materials.js'
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v)
@@ -83,10 +82,4 @@ export class CarRig {
     for (const m of this.materials) m.dispose()
     if (this.root.parent) this.root.parent.remove(this.root)
   }
-}
-
-export function measureDims(root, extra = {}) {
-  const box = new THREE.Box3().setFromObject(root)
-  const size = box.getSize(new THREE.Vector3())
-  return { length: size.z, width: size.x, height: size.y, ...extra }
 }

@@ -202,7 +202,7 @@ function van() {
         { frame: 'front', shape: ['rquad', [[-0.45, 0.7], [0.45, 0.7], [0.45, 0.95], [-0.45, 0.95]], 5], g: 'trim', gap: 0.004 },
         { frame: 'front', shape: ['rquad', [[-0.95, 0.3], [0.95, 0.3], [0.95, 0.5], [-0.95, 0.5]], 6], g: 'trim', gap: 0.004 },
         { frame: 'rear', shape: ['rquad', [[0.84, 0.75], [0.96, 0.75], [0.96, 1.45], [0.84, 1.45]], 5], g: 'tail', gap: 0.005, mirror: true },
-        { frame: 'rear', shape: ['rquad', [[-0.2, 1.3], [0.2, 1.3], [0.2, 2.0], [-0.2, 2.0]], 4], g: 'glass', gap: 0.004, mirror: true },
+        { frame: 'rear', shape: ['rquad', [[0.07, 1.34], [0.8, 1.34], [0.8, 2.02], [0.07, 2.02]], 5], g: 'glass', gap: 0.004, mirror: true },
         { frame: 'rear', shape: ['rquad', [[-0.98, 0.3], [0.98, 0.3], [0.98, 0.5], [-0.98, 0.5]], 6], g: 'trim', gap: 0.004 },
         { frame: 'side', shape: ['strip', [[-2.2, 0.36], [2.3, 0.36]], 0.07], g: 'trim', gap: 0.004, mirror: true },
       ],

@@ -73,7 +73,54 @@ function countTris(root) {
   return { tris, draws }
 }
 
+// ?glbtest=1: build a tiny car with the GLB naming conventions, export it with GLTFExporter and
+// load it back through loadGlbCar() — exercises the future-asset hook end to end.
+async function glbTest() {
+  const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js')
+  const { loadGlbCar } = await import('../src/vehicle/model/GlbCarLoader.js')
+  const src = new THREE.Group()
+  const paint = new THREE.MeshStandardMaterial({ name: 'Paint', color: '#888888' })
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.6, 4.4), paint)
+  body.position.set(0, 0.62, 0)
+  src.add(body)
+  const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.4, 1.8), new THREE.MeshStandardMaterial({ name: 'Glass', color: '#111111' }))
+  cabin.position.set(0, 1.1, -0.2)
+  src.add(cabin)
+  const tyre = new THREE.CylinderGeometry(0.34, 0.34, 0.25, 20).rotateZ(Math.PI / 2)
+  const tyreMat = new THREE.MeshStandardMaterial({ name: 'Tyre', color: '#222222' })
+  const spokeMat = new THREE.MeshStandardMaterial({ name: 'Rim', color: '#dddddd' })
+  for (const [n, x, z] of [['Wheel_FL', -0.85, 1.35], ['Wheel_FR', 0.85, 1.35], ['Wheel_RL', -0.85, -1.35], ['Wheel_RR', 0.85, -1.35]]) {
+    // glTF convention: front toward +Z
+    const w = new THREE.Group()
+    w.name = n
+    w.position.set(x, 0.34, z)
+    w.add(new THREE.Mesh(tyre, tyreMat))
+    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.5, 0.06), spokeMat)
+    w.add(spoke)
+    src.add(w)
+  }
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.08, 0.02), new THREE.MeshStandardMaterial({ name: 'Head', color: '#ffffff' }))
+  head.name = 'Light_Head'
+  head.position.set(0, 0.75, 2.21)
+  src.add(head)
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.06, 0.02), new THREE.MeshStandardMaterial({ name: 'Tail', color: '#550000' }))
+  tail.name = 'Light_Tail'
+  tail.position.set(0, 0.8, -2.21)
+  src.add(tail)
+  const glb = await new GLTFExporter().parseAsync(src, { binary: true })
+  const url = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }))
+  const rig = await loadGlbCar(url, { color: P.get('color') || '#1f5fbf', finish: 'metallic' })
+  rig.setShadow(true)
+  scene.add(rig.root)
+  rigs = [rig]
+  const { tris, draws } = countTris(rig.root)
+  label = `GLB hook test (exported → loadGlbCar)\n${draws} meshes, ${Math.round(tris)} tris, wheels ${rig.wheels ? rig.wheels.nodes.length : 0}, paint ${rig.paintMaterial ? rig.paintMaterial.type : 'none'}\n` +
+    `dims ${rig.dims.length.toFixed(2)} × ${rig.dims.width.toFixed(2)} × ${rig.dims.height.toFixed(2)} wb ${rig.dims.wheelbase.toFixed(2)} r ${rig.dims.wheelRadius.toFixed(2)}\n`
+  window.__rig = rig
+}
+
 async function load() {
+  if (P.get('glbtest')) return glbTest()
   if (P.get('traffic')) {
     const { buildTrafficModels } = await import('../src/traffic/trafficModels.js')
     const models = buildTrafficModels({ quality: P.get('quality') || 'high' })
@@ -133,13 +180,14 @@ function frame(now) {
   const r = renderer.info.render
   info.textContent = label + `frame: ${r.calls} draw calls (incl. shadow pass), ${r.triangles} tris`
   frames++
+  window.__frames = frames
   if (frames === 3) window.__viewerReady = true
   requestAnimationFrame(frame)
 }
 
-// Debug: red back-face copies drawn slightly behind; any red visible = hole or inverted normal.
+// Debug: magenta back-face copies drawn slightly behind; any magenta visible = hole or inverted normal.
 function addBackfaceProbe(root) {
-  const red = new THREE.MeshBasicMaterial({ color: '#ff0000', side: THREE.BackSide, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 })
+  const red = new THREE.MeshBasicMaterial({ color: '#ff00ff', side: THREE.BackSide, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 })
   const list = []
   root.traverse((o) => o.isMesh && list.push(o))
   for (const o of list) {

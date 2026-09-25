@@ -94,7 +94,7 @@ export function buildWheelGeometries(ws, q) {
   rAcc.set({ color: cLip })
   lathe(rAcc, 'rim', [[[hw - 0.006, rr + 0.012], [hw + 0.004, rr + 0.012], [hw + 0.008, rr + 0.002], [hw + 0.007, rr - 0.012], [hw + 0.002, rr - 0.02], [hw - 0.012, rr - 0.026]]], seg)
   rAcc.set({ color: cBarrel })
-  lathe(rAcc, 'rim', [[[hw - 0.012, rr - 0.026], [hw - 0.03, rr - 0.03], [-hw + 0.03, rr - 0.03], [-hw + 0.01, rr - 0.02], [-hw + 0.005, rr + 0.01]]], hi ? seg : Math.max(12, seg >> 1))
+  lathe(rAcc, 'rim', [[[hw - 0.012, rr - 0.026], [hw - 0.03, rr - 0.03], [-hw + 0.03, rr - 0.03], [-hw + 0.01, rr - 0.02], [-hw + 0.005, rr + 0.01]]], seg)
   rAcc.set({ color: cSpoke })
   const hubR = ws.hubR ?? 0.075
   const r0 = hubR - 0.012, r1 = rr - 0.02

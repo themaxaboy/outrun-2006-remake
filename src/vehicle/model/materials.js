@@ -162,6 +162,75 @@ export function applyPaintFinish(mat, hex, finish = 'metallic') {
   return mat
 }
 
+export const MAX_PANEL_LINES = 16
+
+/**
+ * Shader-only panel gaps for the paint. Each line is the body surface's intersection with an
+ * object-space plane (|x| = c, y = c or z = c) limited to a box in the other two axes:
+ *   { axis: 'x'|'y'|'z', at, w (half width, m), a: [min, max], b: [min, max] }
+ * where (a, b) = (y, z) for 'x', (|x|, z) for 'y' and (|x|, y) for 'z'.
+ * Needs a float vertex attribute `aPanel` (1 on the body loft, 0 elsewhere).
+ */
+export function enablePanelLines(mat, lines = []) {
+  const A = [], B = []
+  for (let i = 0; i < MAX_PANEL_LINES; i++) {
+    const l = lines[i]
+    if (!l) {
+      A.push(new THREE.Vector4(-1, 0, 0, 0))
+      B.push(new THREE.Vector4(0, 0, 0, 0))
+      continue
+    }
+    A.push(new THREE.Vector4({ x: 0, y: 1, z: 2 }[l.axis], l.at, l.w ?? 0.0025, 0))
+    B.push(new THREE.Vector4(l.a[0], l.a[1], l.b[0], l.b[1]))
+  }
+  const uniforms = { uPanelA: { value: A }, uPanelB: { value: B }, uPanelN: { value: Math.min(lines.length, MAX_PANEL_LINES) } }
+  mat.userData.panelUniforms = uniforms
+  const prev = mat.onBeforeCompile
+  mat.onBeforeCompile = (sh, r) => {
+    if (prev) prev(sh, r)
+    Object.assign(sh.uniforms, uniforms)
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute float aPanel;\nvarying vec3 vPanelPos;\nvarying float vPanelMask;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvPanelPos = position;\nvPanelMask = aPanel;')
+    sh.fragmentShader = sh.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+varying vec3 vPanelPos;
+varying float vPanelMask;
+uniform vec4 uPanelA[${MAX_PANEL_LINES}];
+uniform vec4 uPanelB[${MAX_PANEL_LINES}];
+uniform int uPanelN;
+float carPanelGap() {
+  vec3 p = vec3(abs(vPanelPos.x), vPanelPos.y, vPanelPos.z);
+  float g = 0.0;
+  for (int i = 0; i < ${MAX_PANEL_LINES}; i++) {
+    if (i >= uPanelN) break;
+    vec4 A = uPanelA[i];
+    vec4 B = uPanelB[i];
+    float d; vec2 ab;
+    if (A.x < 0.5) { d = p.x - A.y; ab = p.yz; }
+    else if (A.x < 1.5) { d = p.y - A.y; ab = p.xz; }
+    else { d = p.z - A.y; ab = p.xy; }
+    float inR = step(B.x, ab.x) * step(ab.x, B.y) * step(B.z, ab.y) * step(ab.y, B.w);
+    float w = A.z;
+    float aa = max(fwidth(d), 1e-5);
+    float cov = clamp(0.5 + (w - abs(d)) / aa, 0.0, 1.0) * clamp(2.0 * w / aa, 0.0, 1.0);
+    g = max(g, inR * cov);
+  }
+  return g * vPanelMask;
+}`,
+      )
+      .replace('#include <color_fragment>', '#include <color_fragment>\nfloat panelGap = carPanelGap();\ndiffuseColor.rgb *= 1.0 - 0.82 * panelGap;')
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.85, panelGap);')
+      .replace('#include <lights_physical_fragment>', '#include <lights_physical_fragment>\n#ifdef USE_CLEARCOAT\nmaterial.clearcoat *= 1.0 - 0.9 * panelGap;\n#endif')
+  }
+  const prevKey = mat.customProgramCacheKey?.bind(mat)
+  mat.customProgramCacheKey = () => (prevKey ? prevKey() : '') + '|panels' + MAX_PANEL_LINES
+  mat.needsUpdate = true
+  return mat
+}
+
 export function createPaintMaterial(hex = '#c8102e', finish = 'metallic') {
   const mat = new THREE.MeshPhysicalMaterial({ name: 'Paint', envMapIntensity: 1.15 })
   applyPaintFinish(mat, hex, finish)

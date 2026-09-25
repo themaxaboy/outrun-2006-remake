@@ -7,7 +7,7 @@ import { MeshAcc } from './meshkit.js'
 import { BodyShape, Cabin, QUALITY } from './bodyGen.js'
 import { archLiners, splitter, skirts, diffuser, wing, lip, mirrors, exhausts, cockpit, decals } from './parts.js'
 import { buildWheelGeometries, WheelSet } from './wheels.js'
-import { createCarMaterials } from './materials.js'
+import { createCarMaterials, enablePanelLines } from './materials.js'
 import { CarRig } from './CarRig.js'
 import { DESIGNS } from './carDesigns.js'
 
@@ -46,6 +46,7 @@ export function buildBodyGeometry(spec, quality = 'high') {
   const acc = new MeshAcc()
   const body = new BodyShape(spec, q)
   const target = body.build(acc)
+  const bodyPaintVerts = acc.group('paint').pos.length / 3
   const cabin = new Cabin(spec, body)
   cabin.build(acc, q)
   const w = spec.wheels
@@ -69,7 +70,14 @@ export function buildBodyGeometry(spec, quality = 'high') {
   if (spec.custom) spec.custom(ctx)
   decals(ctx, spec.decals || [])
   const groups = acc.build()
-  if (groups.has('paint')) bakeAO(groups.get('paint'), body, wheelInfo, spec.ao ?? 1)
+  if (groups.has('paint')) {
+    const pg = groups.get('paint')
+    bakeAO(pg, body, wheelInfo, spec.ao ?? 1)
+    // panel-gap mask: only the lofted body shell gets shader panel lines
+    const mask = new Float32Array(pg.attributes.position.count)
+    mask.fill(1, 0, bodyPaintVerts)
+    pg.setAttribute('aPanel', new THREE.BufferAttribute(mask, 1))
+  }
   return { groups, wheelInfo, body }
 }
 
@@ -87,6 +95,7 @@ export function buildCar(id, { color = '#c8102e', finish = 'metallic', quality =
   const w = spec.wheels
   const mats = createCarMaterials({ color, finish, rimColor: '#ffffff', transparentGlass: !!spec.transparentGlass })
   mats.paint.vertexColors = true
+  if (spec.panels && spec.panels.length) enablePanelLines(mats.paint, spec.panels)
 
   const root = new THREE.Group()
   root.name = `Car_${def.id}`

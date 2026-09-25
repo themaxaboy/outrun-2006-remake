@@ -2,6 +2,19 @@
 // (halfLength L, halfWidth W, wheelbase) so the body always matches the physics dims.
 // Coordinates: metres, y up from the road, front toward -Z, origin between the axles.
 import { band, smoothstep } from './curves.js'
+import { extrudeX } from './parts.js'
+
+// shader panel gaps: plane cuts through the body shell (see materials.enablePanelLines)
+const zCut = (z, ax, ay, w = 0.0045) => ({ axis: 'z', at: z, a: ax, b: ay, w })
+const yCut = (y, ax, az, w = 0.0045) => ({ axis: 'y', at: y, a: ax, b: az, w })
+const xCut = (x, ay, az, w = 0.0045) => ({ axis: 'x', at: x, a: ay, b: az, w })
+/** door outline (front cut, rear cut, sill) + a lid outline (front, rear, sides) */
+function door(z0, z1, ySill, yTop, xIn = 0.6) {
+  return [zCut(z0, [xIn, 1.2], [ySill, yTop]), zCut(z1, [xIn, 1.2], [ySill, yTop]), yCut(ySill, [xIn, 1.2], [z0, z1])]
+}
+function lid(z0, z1, halfW, yMin) {
+  return [zCut(z0, [0, halfW], [yMin, 2]), zCut(z1, [0, halfW], [yMin, 2]), xCut(halfW, [yMin, 2], [z0, z1])]
+}
 
 function aurora(def) {
   const L = def.halfLength, WB = def.wheelbase
@@ -13,6 +26,7 @@ function aurora(def) {
     id: 'aurora',
     wheelbase: WB,
     halfWidth: def.halfWidth,
+    panels: [...door(-0.86, 0.2, 0.2, 0.86), ...lid(-2.06, -1.14, 0.5, 0.4), ...lid(1.66, 2.16, 0.48, 0.75)],
     wheels: {
       radius: R, width: 0.245, rearWidthScale: 1.22, rimRadius: 0.255, archR: [R + 0.038, R + 0.04], archLift: 0.012,
       inset: 0.022, style: 'twin5', rimColor: '#2e3136', lipColor: '#c7cacf', caliperColor: '#f2b705',
@@ -44,7 +58,7 @@ function aurora(def) {
       roofMat: 'paint', pillarMat: 'paint', cPillarMat: 'paint', rearMat: 'glass',
     },
     parts: {
-      splitter: { y: 0.075, thick: 0.016, off: 0.028, inset: 0.97 },
+      splitter: { y: 0.075, thick: 0.016, off: 0.018, inset: 0.95 },
       skirts: { y: 0.1, h: 0.11, out: 0.035 },
       diffuser: { z0: L - 0.62, halfW: 0.62, yLow: 0.1, fins: 5 },
       mirrors: { z: -0.7, y: 0.88, x: 1.02, len: 0.2, h: 0.075, d: 0.12, stalkX: 0.84, stalkY: 0.8 },
@@ -74,7 +88,7 @@ function aurora(def) {
       { frame: 'rear', shape: ['strip', [[0.66, 0.812], [0.84, 0.812], [0.87, 0.78]], 0.009], g: 'tail', gap: 0.008, mirror: true },
       { frame: 'rear', shape: ['rquad', [[-0.66, 0.52], [0.66, 0.52], [0.7, 0.78], [-0.7, 0.78]], 8], g: 'trim', gap: 0.003 },
       ...[0.575, 0.63, 0.685].map((y) => ({ frame: 'rear', shape: ['strip', [[-0.6, y], [0.6, y]], 0.008], g: 'glass', gap: 0.007, minDetail: 1 })),
-      { frame: 'rear', shape: ['rquad', [[-0.8, 0.3], [0.8, 0.3], [0.82, 0.46], [-0.82, 0.46]], 8], g: 'trim', gap: 0.003 },
+      { frame: 'rear', shape: ['rquad', [[-0.76, 0.32], [0.76, 0.32], [0.8, 0.47], [-0.8, 0.47]], 8], g: 'trim', gap: 0.003 },
       // engine louvres
       ...[1.72, 1.8, 1.88, 1.96].map((z) => ({ frame: 'top', shape: ['strip', [[-0.42, z], [0.42, z]], 0.018], g: 'trim', gap: 0.003, minDetail: 1 })),
     ],
@@ -90,6 +104,7 @@ function vento(def) {
     id: 'vento',
     wheelbase: WB,
     halfWidth: def.halfWidth,
+    panels: [...door(-0.8, 0.25, 0.22, 0.8), ...lid(-1.86, -0.9, 0.55, 0.45), ...lid(1.58, 1.94, 0.5, 0.6)],
     wheels: {
       radius: R, width: 0.225, rearWidthScale: 1.15, rimRadius: 0.241, archR: [R + 0.04, R + 0.042], archLift: 0.012,
       inset: 0.028, style: 'ten', rimColor: '#c5c8cd', lipColor: '#e2e4e7', caliperColor: '#d4202a',
@@ -167,6 +182,7 @@ function stradale(def) {
     id: 'stradale',
     wheelbase: WB,
     halfWidth: def.halfWidth,
+    panels: [...door(-0.95, 0.5, 0.22, 0.9), ...lid(-2.2, -0.52, 0.56, 0.45), ...lid(2.1, 2.3, 0.5, 0.7)],
     wheels: {
       radius: R, width: 0.255, rearWidthScale: 1.18, rimRadius: 0.256, archR: [R + 0.04, R + 0.042], archLift: 0.012,
       inset: 0.022, style: 'y5', rimColor: '#7d8087', lipColor: '#aeb1b6', caliperColor: '#1e5bd6', dish: 0.03,
@@ -211,19 +227,22 @@ function stradale(def) {
     },
     decals: [
       // swept headlights along the fender fronts
-      { frame: HL, shape: ['rquad', [[-0.2, -0.03], [0.16, -0.075], [0.21, 0.02], [-0.19, 0.055]], 4], g: 'glass', gap: 0.003, extrude: 0.006, mirror: true },
-      { frame: HL, shape: ['strip', [[-0.18, 0.038], [0.02, 0.018], [0.19, -0.002]], 0.009], g: 'head', gap: 0.007, mirror: true },
-      { frame: HL, shape: ['ellipse', 0.1, -0.035, 0.029, 0.029], g: 'chrome', gap: 0.006, mirror: true },
-      { frame: HL, shape: ['ellipse', 0.1, -0.035, 0.02, 0.02], g: 'head', gap: 0.009, mirror: true },
-      { frame: HL, shape: ['ellipse', 0.03, -0.02, 0.026, 0.026], g: 'chrome', gap: 0.006, mirror: true },
-      { frame: HL, shape: ['ellipse', 0.03, -0.02, 0.018, 0.018], g: 'head', gap: 0.009, mirror: true },
+      { frame: HL, shape: ['rquad', [[-0.26, -0.04], [0.2, -0.1], [0.26, 0.03], [-0.25, 0.075]], 4], g: 'glass', gap: 0.003, extrude: 0.006, mirror: true },
+      { frame: HL, shape: ['strip', [[-0.24, 0.058], [0.02, 0.03], [0.24, 0.006], [0.215, -0.07]], 0.01], g: 'head', gap: 0.007, mirror: true },
+      { frame: HL, shape: ['ellipse', 0.12, -0.045, 0.036, 0.036], g: 'chrome', gap: 0.006, mirror: true },
+      { frame: HL, shape: ['ellipse', 0.12, -0.045, 0.025, 0.025], g: 'head', gap: 0.009, mirror: true },
+      { frame: HL, shape: ['ellipse', 0.025, -0.025, 0.033, 0.033], g: 'chrome', gap: 0.006, mirror: true },
+      { frame: HL, shape: ['ellipse', 0.025, -0.025, 0.023, 0.023], g: 'head', gap: 0.009, mirror: true },
+      { frame: HL, shape: ['ellipse', -0.075, -0.008, 0.03, 0.03], g: 'chrome', gap: 0.006, mirror: true, minDetail: 1 },
+      { frame: HL, shape: ['ellipse', -0.075, -0.008, 0.021, 0.021], g: 'head', gap: 0.009, mirror: true, minDetail: 1 },
       // big grille with slats + side intakes
       { frame: 'front', shape: ['rquad', [[-0.46, 0.17], [0.46, 0.17], [0.38, 0.38], [-0.38, 0.38]], 5], g: 'chrome', gap: 0.003 },
       { frame: 'front', shape: ['rquad', [[-0.445, 0.18], [0.445, 0.18], [0.37, 0.37], [-0.37, 0.37]], 5], g: 'trim', gap: 0.005 },
       ...[0.215, 0.25, 0.285, 0.32].map((y) => ({ frame: 'front', shape: ['strip', [[-0.41, y], [0.41, y]], 0.005], g: 'chrome', gap: 0.007, minDetail: 1 })),
       { frame: 'front', shape: ['rquad', [[0.55, 0.19], [0.76, 0.2], [0.74, 0.3], [0.58, 0.29]], 5], g: 'trim', gap: 0.004, mirror: true },
       // hood louvres
-      ...[-1.55, -1.49, -1.43, -1.37].map((z) => ({ frame: 'top', shape: ['strip', [[0.34, z], [0.52, z + 0.03]], 0.012], g: 'trim', gap: 0.003, mirror: true, minDetail: 1 })),
+      { frame: 'top', shape: ['rquad', [[0.3, -1.62], [0.56, -1.56], [0.56, -1.3], [0.3, -1.36]], 5], g: 'glass', gap: 0.003, mirror: true },
+      ...[-1.53, -1.47, -1.41].map((z) => ({ frame: 'top', shape: ['strip', [[0.33, z], [0.53, z + 0.05]], 0.011], g: 'paint', gap: 0.006, mirror: true, minDetail: 1 })),
       // fender vent behind the front wheel
       { frame: 'side', shape: ['rquad', [[-0.95, 0.44], [-0.62, 0.46], [-0.6, 0.56], [-0.9, 0.57]], 5], g: 'trim', gap: 0.003, mirror: true },
       ...[0.475, 0.505, 0.535].map((y) => ({ frame: 'side', shape: ['strip', [[-0.9, y], [-0.63, y + 0.012]], 0.005], g: 'chrome', gap: 0.006, mirror: true, minDetail: 1 })),
@@ -233,7 +252,7 @@ function stradale(def) {
       { frame: 'rear', shape: ['strip', [[0.42, 0.755], [0.8, 0.75]], 0.009], g: 'tail', gap: 0.007, mirror: true },
       { frame: 'rear', shape: ['strip', [[-0.3, 0.79], [0.3, 0.79]], 0.02], g: 'glass', gap: 0.004 },
       // rear lower + exhaust surrounds
-      { frame: 'rear', shape: ['rquad', [[-0.8, 0.3], [0.8, 0.3], [0.82, 0.45], [-0.82, 0.45]], 8], g: 'trim', gap: 0.003 },
+      { frame: 'rear', shape: ['rquad', [[-0.74, 0.33], [0.74, 0.33], [0.78, 0.46], [-0.78, 0.46]], 8], g: 'trim', gap: 0.003 },
     ],
   }
 }
@@ -247,6 +266,7 @@ function nebula(def) {
     id: 'nebula',
     wheelbase: WB,
     halfWidth: def.halfWidth,
+    panels: [...door(-0.9, 0.02, 0.2, 0.8), ...lid(-2.08, -1.22, 0.46, 0.3)],
     wheels: {
       radius: R, width: 0.255, rearWidthScale: 1.25, rimRadius: 0.266, archR: [R + 0.036, R + 0.038], archLift: 0.012,
       inset: 0.018, style: 'turbine', spokes: 7, rimColor: '#1b1d21', lipColor: '#3a3d43', hubColor: '#2a2c30', caliperColor: '#ff6b00', centerLock: true, dish: 0.045,
@@ -294,10 +314,8 @@ function nebula(def) {
       exhausts: { pts: [[0.0, 0.45]], r: 0.065, sx: 1.3, sy: 0.75, mirror: false },
     },
     custom: (ctx) => {
-      // shark fin along the spine
-      const { acc } = ctx
-      const shape = [[0.95, 0.83], [L - 0.6, 0.9], [L - 0.35, 1.02], [L - 0.28, 1.02], [L - 0.35, 0.9], [L - 0.2, 0.88]]
-      finPlate(acc, 'paint', shape, 0.012)
+      // shark fin along the spine, rising toward the wing
+      extrudeX(ctx.acc, 'paint', [[0.9, 0.8], [L - 0.22, 0.86], [L - 0.3, 1.0], [L - 0.52, 0.99], [1.3, 0.86]], -0.007, 0.014)
     },
     decals: [
       // quad LED slit headlights
@@ -309,7 +327,8 @@ function nebula(def) {
       { frame: 'front', shape: ['rquad', [[0.58, 0.13], [0.86, 0.14], [0.84, 0.36], [0.62, 0.3]], 5], g: 'trim', gap: 0.004, mirror: true },
       ...[0.17, 0.225].map((y) => ({ frame: 'front', shape: ['strip', [[-0.46, y], [0.46, y]], 0.008], g: 'carbon', gap: 0.008, minDetail: 1 })),
       // hood ducts
-      { frame: 'top', shape: ['rquad', [[-0.28, -1.95], [0.28, -1.95], [0.22, -1.62], [-0.22, -1.62]], 5], g: 'trim', gap: 0.003 },
+      { frame: 'top', shape: ['rquad', [[-0.3, -1.97], [0.3, -1.97], [0.22, -1.6], [-0.22, -1.6]], 5], g: 'carbon', gap: 0.003 },
+      { frame: 'top', shape: ['rquad', [[-0.24, -1.9], [0.24, -1.9], [0.18, -1.66], [-0.18, -1.66]], 5], g: 'trim', gap: 0.006 },
       // side intake
       { frame: 'side', shape: ['rquad', [[0.2, 0.33], [0.95, 0.4], [0.9, 0.63], [0.45, 0.62]], 5], g: 'trim', gap: 0.002, mirror: true },
       // rear: thin full-width light blade + big black fascia
@@ -319,18 +338,6 @@ function nebula(def) {
       { frame: 'rear', shape: ['rquad', [[-0.84, 0.3], [0.84, 0.3], [0.86, 0.74], [-0.86, 0.74]], 8], g: 'trim', gap: 0.003 },
       ...[0.62, 0.67].map((y) => ({ frame: 'rear', shape: ['strip', [[-0.74, y], [0.74, y]], 0.008], g: 'carbon', gap: 0.007, minDetail: 1 })),
     ],
-  }
-}
-
-/** A thin vertical plate (fin) in the car's centre plane from a (z, y) outline. */
-function finPlate(acc, group, pts, thick) {
-  const g = acc.group(group)
-  for (const side of [-1, 1]) {
-    const ids = pts.map(([z, y]) => acc.vert(g, (side * thick) / 2, y, z, side, 0, 0, z, y))
-    for (let i = 1; i < pts.length - 1; i++) {
-      if (side > 0) acc.tri(g, ids[0], ids[i + 1], ids[i])
-      else acc.tri(g, ids[0], ids[i], ids[i + 1])
-    }
   }
 }
 
