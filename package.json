@@ -1,0 +1,30 @@
+{
+  "name": "outrun-2006-remake",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fan-made web remake inspired by OutRun 2006: Coast 2 Coast — original assets, procedural world, arcade drift.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "bench": "playwright test tests/e2e/bench.spec.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "postprocessing": "^6.39.5",
+    "three": "0.186.1",
+    "vue": "^3.5.43"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.1"
+  }
+}

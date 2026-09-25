@@ -1,0 +1,25 @@
+:root {
+  --font-arcade: 'Segoe UI', 'Helvetica Neue', Roboto, Arial, sans-serif;
+  --accent: #ff6a00;
+  --accent2: #ffd84a;
+  --ink: #0b1026;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1026; color: #fff; font-family: var(--font-arcade); -webkit-tap-highlight-color: transparent; }
+#gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
+#ui { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+#app { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+#app > * { pointer-events: auto; }
+.perf-overlay { position: fixed; left: 8px; bottom: 8px; z-index: 50; margin: 0; padding: 6px 8px; font: 11px/1.35 ui-monospace, Menlo, monospace; color: #cfe; background: rgba(0,0,0,.55); border-radius: 6px; pointer-events: none; white-space: pre; }
+/* touch controls */
+.touch-controls { position: fixed; inset: 0; pointer-events: none; z-index: 6; user-select: none; }
+.tc-steer { position: absolute; left: 0; bottom: 0; width: 45vw; height: 55vh; pointer-events: auto; touch-action: none; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 40px; }
+.tc-steer span { position: absolute; bottom: 14px; font-size: 11px; letter-spacing: .2em; opacity: .5; font-weight: 800; }
+.tc-knob { width: 84px; height: 84px; border-radius: 50%; border: 3px solid rgba(255,255,255,.55); background: rgba(255,255,255,.12); box-shadow: 0 0 20px rgba(0,0,0,.35); }
+.tc-right { position: absolute; right: 14px; bottom: 18px; display: grid; grid-template-columns: auto auto; gap: 12px; pointer-events: auto; }
+.tc-btn { width: 86px; height: 86px; border-radius: 50%; border: 3px solid rgba(255,255,255,.6); background: rgba(0,0,0,.28); color: #fff; font: 900 italic 14px var(--font-arcade); letter-spacing: .06em; touch-action: none; }
+.tc-btn:active { background: rgba(255,255,255,.3); }
+.tc-gas { background: rgba(20,180,90,.35); grid-row: 1 / 3; grid-column: 2; height: 184px; border-radius: 44px; }
+.tc-brake { background: rgba(220,40,40,.35); }
+.tc-drift { background: rgba(40,140,255,.35); }
