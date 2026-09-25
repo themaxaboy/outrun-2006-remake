@@ -6,7 +6,10 @@ export const store = reactive({
   loading: 0,
   loadingLabel: '',
   error: null,
-  screen: 'title', // title | mode | car | music | race | pause | results | ranking | settings
+  screen: 'title', // title | mode | car | music | race | results | ranking | settings
+  overlay: null, // 'settings' while paused
+  paused: false,
+  device: 'keyboard',
   mode: 'outrun',
   carId: 'aurora',
   color: null,
@@ -14,4 +17,5 @@ export const store = reactive({
   manual: false,
   music: null,
   lastResult: null,
+  rankingFocus: null,
 })

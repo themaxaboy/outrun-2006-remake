@@ -29,6 +29,8 @@ import { HUD } from '../hud/hud.js'
 import { RaceTimer } from './timer.js'
 import { Score } from './score.js'
 import { WorldExtras } from '../world/extras.js'
+import { Showroom } from './showroom.js'
+import * as rankings from './rankings.js'
 import { Traffic } from '../traffic/traffic.js'
 import { buildFallbackTrafficModels } from '../traffic/fallbackModels.js'
 
@@ -118,7 +120,7 @@ export class Game {
     this.cam.mode = this.settings.camera
     this.poser = new CarPoser()
     this.hud = new HUD(this.uiRoot)
-    this.perf = new Perf({ overlay: params.perf || params.bench })
+    this.perf = new Perf({ overlay: params.perf || params.bench || !!this.settings.showFps })
 
     onProgress(0.55, 'post')
     this.post = new PostFX(renderer, this.scene, this.camera, this.preset)
@@ -181,6 +183,20 @@ export class Game {
     try { await this.renderer.compileAsync(this.scene, this.camera) } catch { /* optional */ }
   }
 
+  async _buildRig(def, color, finish, quality) {
+    let rig = null
+    const loader = carBuilders['../vehicle/model/CarBuilder.js']
+    if (loader) {
+      try {
+        const m = await loader()
+        rig = m.buildCar(def.id, { color, finish, quality })
+      } catch (e) {
+        console.warn('CarBuilder failed, using placeholder', e)
+      }
+    }
+    return rig || buildPlaceholderCar(def, color)
+  }
+
   async _setRig(def, color, finish) {
     if (this.rig) {
       this.scene.remove(this.rig.root)
@@ -239,6 +255,7 @@ export class Game {
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
     this.post?.setSize(w, h)
+    this.showroom?.resize(w, h)
   }
 
   // ── race lifecycle ──────────────────────────────────────────────────────────
@@ -284,7 +301,14 @@ export class Game {
   /**
    * Start a race. cfg: { mode: 'outrun'|'timeattack', carId, color, finish, manual, music, stage?, route? }
    */
+  async restart() {
+    return this.startRace(this._lastCfg || {})
+  }
+
   async startRace(cfg = {}) {
+    this._lastCfg = cfg
+    this.exitShowroom()
+    this.cam.mode = this.settings.camera || 'chase'
     this.mode = cfg.mode || 'outrun'
     this.carDef = getCar(cfg.carId || this.carDef?.id || 'aurora')
     this._color = cfg.color || this.carDef.colors[0]
@@ -308,9 +332,37 @@ export class Game {
       await this.audio.unlock?.()
       this.audio.startEngine?.(this.carDef)
       if (cfg.music) this.audio.playMusic?.(cfg.music)
+      else this.audio.stopMusic?.(0.5)
     }
     bus.emit('race:start', { mode: this.mode, car: this.carDef.id })
   }
+
+  // ── menus: showroom (car select) ───────────────────────────────────────────
+
+  async enterShowroom(carId, color, finish) {
+    if (!this.showroom) {
+      this.showroom = new Showroom(this.renderer, (def, c, f) => this._buildRig(def, c, f, 'high'))
+      this.showroom.resize(window.innerWidth, window.innerHeight)
+    }
+    await this.setShowroomCar(carId, color, finish)
+    this.post.setView(this.showroom.scene, this.showroom.camera)
+    this.post.applyLook(this.showroom.look)
+    this._menuState = this.state
+    this.state = 'showroom'
+  }
+
+  async setShowroomCar(carId, color, finish) {
+    const def = getCar(carId)
+    await this.showroom?.setCar(def, color || def.colors[0], finish || 'metallic')
+  }
+
+  exitShowroom() {
+    if (this.state !== 'showroom') return
+    this.post.setView(this.scene, this.camera)
+    this.state = this._menuState === 'showroom' ? 'attract' : this._menuState || 'attract'
+  }
+
+  get rankings() { return rankings }
 
   pause() {
     if (this.state !== 'race' && this.state !== 'countdown') return
@@ -331,6 +383,7 @@ export class Game {
   quitToTitle() {
     this.audio?.stopEngine?.()
     this.audio?.resume?.()
+    this.audio?.stopMusic?.(1)
     this.startAttract()
     bus.emit('race:quit')
   }
@@ -445,6 +498,7 @@ export class Game {
     this.cam.mode = 'far'
     const col = Number(this.course.stage.id.split('-')[1])
     this.result = this._makeResult(true, col)
+    rankings.unlock('nebula')
     setTimeout(() => {
       this.hud.show(false)
       this.input.showTouch(false)
@@ -578,6 +632,14 @@ export class Game {
         this.hud.countdown(String(n))
         this.audio?.sfx?.('countdown')
       }
+    }
+
+    if (this.state === 'showroom') {
+      this.showroom.update(frameDt)
+      this.renderer.info.reset()
+      this.post.render(frameDt)
+      this.perf.frame(frameDt * 1000, performance.now() - t0, this.renderer)
+      return
     }
 
     this._syncVisuals(alpha, frameDt)

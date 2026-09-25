@@ -15,13 +15,16 @@ export class PostFX {
 
   build(preset) {
     if (this.composer) this.composer.dispose()
+    const view = this.renderPass ? [this.renderPass.mainScene, this.renderPass.mainCamera] : null
+    if (view) { this.scene = view[0]; this.camera = view[1] }
     const renderer = this.renderer
     this.preset = preset
     const composer = new EffectComposer(renderer, {
       frameBufferType: THREE.HalfFloatType,
       multisampling: preset.msaa || 0,
     })
-    composer.addPass(new RenderPass(this.scene, this.camera))
+    this.renderPass = new RenderPass(this.scene, this.camera)
+    composer.addPass(this.renderPass)
     this.bloom = new BloomEffect({
       mipmapBlur: true,
       luminanceThreshold: 1.0,
@@ -35,6 +38,7 @@ export class PostFX {
     this.finish = new FinishEffect()
     const effects = preset.speedBlur ? [this.speed, this.bloom, this.finish] : [this.bloom, this.finish]
     const main = new EffectPass(this.camera, ...effects)
+    this.mainPass = main
     main.dithering = true
     composer.addPass(main)
     if (preset.aa === 'smaa') composer.addPass(new EffectPass(this.camera, new SMAAEffect({ preset: SMAAPreset.MEDIUM })))
@@ -44,6 +48,15 @@ export class PostFX {
   }
 
   setSize(w, h) { this.composer.setSize(w, h, false) }
+
+  /** Swap the rendered scene/camera (e.g. showroom ↔ world) without rebuilding the chain. */
+  setView(scene, camera) {
+    this.scene = scene
+    this.camera = camera
+    this.renderPass.mainScene = scene
+    this.renderPass.mainCamera = camera
+    for (const p of this.composer.passes) p.mainCamera = camera
+  }
 
   applyLook(look) {
     this.finish.set('exposure', look.exposure)

@@ -1,0 +1,7 @@
+{
+  "_note": "Per-frame renderer budgets (all passes). Verified headlessly with SwiftShader; real fps must be checked on hardware.",
+  "low":    { "calls": 140, "triangles": 450000,  "updateMs95": 6 },
+  "medium": { "calls": 220, "triangles": 900000,  "updateMs95": 6 },
+  "high":   { "calls": 300, "triangles": 1600000, "updateMs95": 6 },
+  "ultra":  { "calls": 420, "triangles": 3000000, "updateMs95": 6 }
+}

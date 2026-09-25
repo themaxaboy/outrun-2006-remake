@@ -41,6 +41,17 @@ export class Perf {
     }
   }
 
+  setOverlay(v) {
+    if (v && !this.el) {
+      this.el = document.createElement('pre')
+      this.el.className = 'perf-overlay'
+      document.body.appendChild(this.el)
+    } else if (!v && this.el) {
+      this.el.remove()
+      this.el = null
+    }
+  }
+
   static pct(arr, p) {
     if (!arr.length) return 0
     const s = [...arr].sort((a, b) => a - b)

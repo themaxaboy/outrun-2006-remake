@@ -2,7 +2,7 @@
 // column r the "hard" right edge — like the original, left forks are gentler.
 // All names are original to this remake.
 
-export const START_TIME = 85 // seconds on the clock at the start line
+export const START_TIME = 90 // seconds on the clock at the start line
 
 /** time-of-day presets are defined in world/timeOfDay.js; weather: clear | rain | snow | mist */
 export const STAGES = [
@@ -44,5 +44,5 @@ export function stageRowCol(id) {
 export function stageExtension(stage) {
   const { row, col } = stageRowCol(stage.id)
   // Harder (right-hand) routes are longer & twistier, so they give slightly more time.
-  return Math.round(stage.length / 66 + col * 1.5 + row * 0.5)
+  return Math.round(stage.length / 57 + col * 1.5 + row * 0.5)
 }
