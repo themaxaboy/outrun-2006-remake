@@ -313,12 +313,20 @@ export function renderDrum(name, sr) {
 
 export const DRUM_NAMES = Object.keys(R)
 
-/** Stereo AudioBuffers for every voice, cached per context. */
-export function getDrumBuffers(ctx) {
-  return ctxCache(ctx, 'drums', () => {
-    const sr = Math.min(ctx.sampleRate, SR_CAP)
-    const map = {}
-    for (const name of DRUM_NAMES) map[name] = toAudioBuffer(ctx, panMono(renderDrum(name, sr), DRUM_PAN[name] || 0), sr)
-    return map
+export const drumSampleRate = (ctx) => Math.min(ctx.sampleRate, SR_CAP)
+export const drumCacheKey = (name) => 'drum:' + name
+
+/** Stereo [L, R] arrays with the voice's pan baked in. */
+export function renderDrumStereo(name, sr) {
+  return panMono(renderDrum(name, sr), DRUM_PAN[name] || 0)
+}
+
+/** Stereo AudioBuffer for one voice, cached per context (rendered on first use if needed). */
+export function getDrumBuffer(ctx, name) {
+  if (!R[name]) return null
+  return ctxCache(ctx, drumCacheKey(name), () => {
+    const sr = drumSampleRate(ctx)
+    return toAudioBuffer(ctx, renderDrumStereo(name, sr), sr)
   })
 }
+

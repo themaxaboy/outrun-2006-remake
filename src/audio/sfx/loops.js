@@ -97,27 +97,23 @@ export function renderGravel(sr) {
   return normalize(makeLoop(out, sr, 0.2), 0.8)
 }
 
-function buffers(ctx) {
-  return ctxCache(ctx, 'loops', () => {
-    const sr = Math.min(ctx.sampleRate, SR_CAP)
-    return {
-      squeal: toAudioBuffer(ctx, renderSqueal(sr), sr),
-      wind: toAudioBuffer(ctx, renderWind(sr), sr),
-      rumble: toAudioBuffer(ctx, renderRumble(sr), sr),
-      gravel: toAudioBuffer(ctx, renderGravel(sr), sr),
-    }
+export const LOOP_RENDER = { squeal: renderSqueal, wind: renderWind, rumble: renderRumble, gravel: renderGravel }
+export const LOOP_NAMES = Object.keys(LOOP_RENDER)
+export const loopSampleRate = (ctx) => Math.min(ctx.sampleRate, SR_CAP)
+export const loopCacheKey = (name) => 'loop:' + name
+
+export function getLoopBuffer(ctx, name) {
+  return ctxCache(ctx, loopCacheKey(name), () => {
+    const sr = loopSampleRate(ctx)
+    return toAudioBuffer(ctx, LOOP_RENDER[name](sr), sr)
   })
 }
 
-/** Pre-render the loop buffers for a context (call during idle time). */
-export function prewarmLoops(ctx) {
-  buffers(ctx)
-}
 
 export class DrivingLoops {
   constructor(ctx, dest) {
     this.ctx = ctx
-    const b = buffers(ctx)
+    const b = Object.fromEntries(LOOP_NAMES.map((n) => [n, getLoopBuffer(ctx, n)]))
     const t = ctx.currentTime
     this.stopped = false
     this.last = {}
@@ -162,18 +158,19 @@ export class DrivingLoops {
     // Tyre squeal: gain and pitch from drift + speed; silent in the air.
     const drift = air ? 0 : clamp(p.drift || 0, 0, 1)
     const sq = Math.pow(drift, 1.25) * clamp(speed / 14, 0, 1)
-    this._set('sqG', this.squeal.g.gain, sq * 0.55, time, 0.05, 0.004)
+    this._set('sqG', this.squeal.g.gain, sq * 0.4, time, 0.05, 0.004)
     this._set('sqR', this.squeal.src.playbackRate, 0.82 + 0.22 * drift + 0.16 * clamp(speed / 80, 0, 1), time, 0.08, 0.004)
     this._set('sqF', this.squeal.filt.frequency, 1100 + 700 * drift, time, 0.1, 10)
 
-    // Wind: gain ∝ speed², brighter with speed; boosted in the air.
-    const w = Math.max(clamp(p.wind ?? 0, 0, 1) * 0.8, sp * sp) * (air ? 1.3 : 1)
+    // Wind: gain ∝ speed² (p.wind is a 0..1 speed fraction), brighter with speed; boosted in the air.
+    const wf = clamp(p.wind ?? 0, 0, 1)
+    const w = Math.max(wf * wf, sp * sp) * (air ? 1.3 : 1)
     this._set('wG', this.wind.g.gain, w * 0.42, time, 0.12, 0.003)
     this._set('wF', this.wind.filt.frequency, 280 + 1500 * sp, time, 0.2, 8)
 
     // Rumble strip: thump rate ∝ speed (curb stripes ~1.5 m apart).
     const rum = air ? 0 : clamp(p.rumble || 0, 0, 1) * clamp(speed / 6, 0, 1)
-    this._set('rG', this.rumble.g.gain, rum * 0.75, time, 0.025, 0.004)
+    this._set('rG', this.rumble.g.gain, rum * 0.5, time, 0.025, 0.004)
     this._set('rR', this.rumble.src.playbackRate, clamp(speed / 30, 0.25, 2.6), time, 0.05, 0.01)
 
     // Gravel / off-road.

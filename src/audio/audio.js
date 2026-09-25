@@ -10,13 +10,12 @@
 import { getAudioContextClass, hasWindow, hasDocument } from './core/env.js'
 import { createMixer, DEFAULT_VOLUMES } from './core/mixer.js'
 import { EngineSound, loadEngineWorklet } from './engine/engineSound.js'
-import { DrivingLoops, prewarmLoops } from './sfx/loops.js'
-import { SfxBank, SFX_BUFFER_KEYS, getSfxBuffer } from './sfx/sfxBank.js'
+import { DrivingLoops } from './sfx/loops.js'
+import { SfxBank } from './sfx/sfxBank.js'
 import { TrackPlayer, BufferPlayer, TICK_MS, samplerNotes, VOICE_CAP } from './music/player.js'
 import { TRACKS, getTrack } from './music/tracks/index.js'
-import { getDrumBuffers } from './music/drumkit.js'
-import { getSamplerBuffer } from './music/samplers.js'
 import { getReverb } from './music/fx.js'
+import { buildJobs, startPrerender } from './core/prerender.js'
 import { saveUserTrack, loadUserTracks, clearUserTracks } from './userTracks.js'
 
 const MAX_USER_TRACKS = 40
@@ -36,10 +35,8 @@ function decode(ctx, arrayBuffer) {
   })
 }
 
-const idle = (fn) => {
-  if (hasWindow() && window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 200 })
-  else setTimeout(fn, 16)
-}
+// resume() can stay pending until a user gesture (autoplay policy) — never block callers on it.
+const settle = (p, ms = 300) => Promise.race([p, new Promise((r) => setTimeout(r, ms))])
 
 export class AudioEngine {
   constructor() {
@@ -61,7 +58,7 @@ export class AudioEngine {
     this._user = [] // { id, title, size, data: ArrayBuffer, duration }
     this._decoded = new Map() // id → AudioBuffer (small LRU)
     this._restorePromise = null
-    this._prewarmQueue = []
+    this._prerender = null
     this._seed = 1
   }
 
@@ -70,11 +67,7 @@ export class AudioEngine {
   async unlock() {
     if (this.ctx) {
       if (this.ctx.state !== 'running' && !this._paused && !this._hidden) {
-        try {
-          await this.ctx.resume()
-        } catch {
-          /* not allowed yet */
-        }
+        await settle(this.ctx.resume().catch(() => {}))
       }
       return this.ready
     }
@@ -92,7 +85,7 @@ export class AudioEngine {
     // resume() synchronously inside the gesture (Safari), then build the graph.
     const resumed = this.ctx.state === 'running' ? Promise.resolve() : this.ctx.resume().catch(() => {})
     this._setup()
-    await resumed
+    await settle(resumed)
     return this.ready
   }
 
@@ -142,21 +135,11 @@ export class AudioEngine {
     }
   }
 
-  /** Pre-render sfx / drum / sampler buffers in small idle-time slices. */
+  /** Pre-render sfx / drum / loop / sampler buffers (Worker, or idle-time slices). */
   _queuePrewarm() {
-    const ctx = this.ctx
-    const q = this._prewarmQueue
-    q.push(() => getDrumBuffers(ctx))
-    q.push(() => prewarmLoops(ctx))
-    for (const k of ['countdown', 'go', 'shift', 'backfire0', 'backfire1', 'backfire2', 'uiMove', 'uiSelect', 'uiBack']) q.push(() => getSfxBuffer(ctx, k))
-    for (const k of SFX_BUFFER_KEYS) q.push(() => getSfxBuffer(ctx, k))
-    for (const t of TRACKS) for (const { preset, midi } of samplerNotes(t)) q.push(() => getSamplerBuffer(ctx, preset, midi))
-    const run = () => {
-      const t0 = Date.now()
-      while (q.length && Date.now() - t0 < 8) q.shift()()
-      if (q.length) idle(run)
-    }
-    idle(run)
+    const notes = []
+    for (const t of TRACKS) notes.push(...samplerNotes(t))
+    this._prerender = startPrerender(this.ctx, buildJobs(this.ctx, notes))
   }
 
   /** Game pause: suspend the whole context. */
@@ -386,7 +369,8 @@ export class AudioEngine {
       stolen: this._player && this._player.pool ? this._player.pool.stolen : 0,
       fading: this._fading.length,
       sfxActive: this._sfx ? this._sfx.active : 0,
-      prewarmPending: this._prewarmQueue.length,
+      prewarmMode: this._prerender ? this._prerender.mode : null,
+      prewarmPending: this._prerender ? this._prerender.pending() : 0,
     }
   }
 }

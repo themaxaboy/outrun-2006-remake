@@ -5,9 +5,7 @@
 export const TAU = Math.PI * 2
 
 export const clamp = (x, a, b) => (x < a ? a : x > b ? b : x)
-export const lerp = (a, b, t) => a + (b - a) * t
 export const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12)
-export const dbToGain = (db) => Math.pow(10, db / 20)
 
 /** Deterministic PRNG (mulberry32). Returns a function producing floats in [0, 1). */
 export function rng(seed = 1) {
@@ -197,14 +195,6 @@ export function panMono(mono, pan = 0) {
   return [L, R]
 }
 
-/** Mix `src` into `dst` starting at sample `offset` with gain `g`. */
-export function mixInto(dst, src, offset = 0, g = 1) {
-  const o = Math.max(0, offset | 0)
-  const n = Math.min(src.length, dst.length - o)
-  for (let i = 0; i < n; i++) dst[o + i] += src[i] * g
-  return dst
-}
-
 /** Create an AudioBuffer from one or more channel arrays. */
 export function toAudioBuffer(ctx, chans, sampleRate) {
   const arr = Array.isArray(chans) ? chans : [chans]
@@ -253,16 +243,26 @@ export function oscSample(type, phase, dt) {
 
 /** Per-context cache helper: WeakMap<ctx, Map<key, value>>. */
 const ctxCaches = new WeakMap()
-export function ctxCache(ctx, key, make) {
+function cacheFor(ctx) {
   let m = ctxCaches.get(ctx)
   if (!m) {
     m = new Map()
     ctxCaches.set(ctx, m)
   }
+  return m
+}
+export function ctxCache(ctx, key, make) {
+  const m = cacheFor(ctx)
   let v = m.get(key)
   if (v === undefined) {
     v = make()
     m.set(key, v)
   }
   return v
+}
+export const ctxCacheHas = (ctx, key) => cacheFor(ctx).has(key)
+export function ctxCacheSet(ctx, key, value) {
+  const m = cacheFor(ctx)
+  if (!m.has(key)) m.set(key, value)
+  return m.get(key)
 }

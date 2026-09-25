@@ -252,6 +252,7 @@ export class BufferPlayer {
     this.out.connect(dest)
     this.src = null
     this.stopped = false
+    this.stopAt = Infinity
   }
   get duration() {
     return this.buffer.duration
@@ -275,6 +276,7 @@ export class BufferPlayer {
   stop(when = this.ctx.currentTime, fade = 1) {
     if (this.stopped) return
     this.stopped = true
+    this.stopAt = when + fade
     const g = this.out.gain
     holdParam(g, when)
     g.linearRampToValueAtTime(0, when + Math.max(0.02, fade))

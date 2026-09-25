@@ -2,7 +2,7 @@
 // each play is source → gain → StereoPanner → bus (3 short-lived nodes, auto-disconnected).
 // 'pass' and the whoosh part of 'nearMiss' are live (swept band-pass on a shared noise loop).
 import { TAU, rng, Biquad, softclip, whiteNoise, pinkNoise, normalize, fadeEdges, toAudioBuffer, ctxCache, clamp } from '../core/dsp.js'
-import { createPanner, disconnectOnEnded, setParam } from '../core/env.js'
+import { createPanner } from '../core/env.js'
 import { JINGLES } from './jingles.js'
 
 const SR_CAP = 48000
@@ -178,7 +178,15 @@ function horn(sr) {
   return normalize(out, 0.75)
 }
 
+function whooshNoise(sr) {
+  const pink = pinkNoise(Math.round(1.5 * sr), 555)
+  const white = whiteNoise(pink.length, 556)
+  for (let i = 0; i < pink.length; i++) pink[i] = pink[i] * 0.8 + white[i] * 0.2
+  return normalize(pink, 0.9)
+}
+
 const RENDER = {
+  whooshNoise,
   shift,
   backfire0: (sr) => backfire(sr, 0),
   backfire1: (sr) => backfire(sr, 1),
@@ -245,25 +253,26 @@ const SPEC = {
   horn: { bus: 'sfx', gain: 0.45, cool: 0.25 },
 }
 
+export const sfxSampleRate = (ctx) => Math.min(ctx.sampleRate, SR_CAP)
+export const sfxCacheKey = (key) => 'sfx:' + key
+
+/** Pure render of one sfx buffer → array of channel Float32Arrays (null if unknown). */
+export function renderSfxChannels(key, sr) {
+  const r = RENDER[key]
+  if (!r) return null
+  const data = r(sr)
+  return Array.isArray(data) ? data : [data]
+}
+
 export function getSfxBuffer(ctx, key) {
-  return ctxCache(ctx, 'sfx:' + key, () => {
-    const r = RENDER[key]
-    if (!r) return null
-    const sr = Math.min(ctx.sampleRate, SR_CAP)
-    const data = r(sr)
-    return toAudioBuffer(ctx, Array.isArray(data) ? data : [data], sr)
+  if (!RENDER[key]) return null
+  return ctxCache(ctx, sfxCacheKey(key), () => {
+    const sr = sfxSampleRate(ctx)
+    return toAudioBuffer(ctx, renderSfxChannels(key, sr), sr)
   })
 }
 
-function noiseLoop(ctx) {
-  return ctxCache(ctx, 'sfx:noise', () => {
-    const sr = Math.min(ctx.sampleRate, SR_CAP)
-    const pink = pinkNoise(Math.round(1.5 * sr), 555)
-    const white = whiteNoise(pink.length, 556)
-    for (let i = 0; i < pink.length; i++) pink[i] = pink[i] * 0.8 + white[i] * 0.2
-    return toAudioBuffer(ctx, normalize(pink, 0.9), sr)
-  })
-}
+const noiseLoop = (ctx) => getSfxBuffer(ctx, 'whooshNoise')
 
 /** All renderer keys (used for idle-time prewarming). */
 export const SFX_BUFFER_KEYS = Object.keys(RENDER)
@@ -282,10 +291,9 @@ export class SfxBank {
   /** Render every buffer now (synchronous). Prefer prewarmStep() in idle time. */
   prewarm() {
     for (const k of SFX_BUFFER_KEYS) getSfxBuffer(this.ctx, k)
-    noiseLoop(this.ctx)
   }
 
-  _out(bus, gain, pan, when) {
+  _out(bus, gain, pan) {
     const ctx = this.ctx
     const g = ctx.createGain()
     g.gain.value = gain
@@ -304,7 +312,7 @@ export class SfxBank {
     const src = ctx.createBufferSource()
     src.buffer = buf
     src.playbackRate.value = rate
-    const { g, p } = this._out(bus, gain, pan, t)
+    const { g, p } = this._out(bus, gain, pan)
     src.connect(g)
     this.active++
     const nodes = [src, g, p]
@@ -451,5 +459,3 @@ export class SfxBank {
   }
 }
 
-export const SFX_SPEC = SPEC
-export { setParam as _setParam }

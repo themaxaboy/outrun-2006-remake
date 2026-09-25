@@ -13,10 +13,6 @@ export function getOfflineAudioContextClass() {
   return window.OfflineAudioContext || window.webkitOfflineAudioContext || null
 }
 
-export function now() {
-  return typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()
-}
-
 /** setTargetAtTime that tolerates non-finite input and old implementations. */
 export function setParam(param, value, time, tau = 0.03) {
   if (!param || !Number.isFinite(value)) return
@@ -54,16 +50,3 @@ export function createPanner(ctx, pan = 0) {
   return g
 }
 
-/** Disconnect a list of nodes when `src` ends (best effort, never throws). */
-export function disconnectOnEnded(src, nodes) {
-  src.onended = () => {
-    for (const n of nodes) {
-      try {
-        n.disconnect()
-      } catch {
-        /* already gone */
-      }
-    }
-    src.onended = null
-  }
-}

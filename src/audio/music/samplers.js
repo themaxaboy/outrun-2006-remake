@@ -156,6 +156,15 @@ export function renderSamplerNote(preset, midi, sr = SAMPLER_SR) {
   return a
 }
 
+export const samplerCacheKey = (preset, midi) => `smp:${preset}:${midi}`
+
+/** Store a note rendered elsewhere (worker) so later lookups are free. */
+export function installSamplerNote(preset, midi, data, sr = SAMPLER_SR) {
+  const key = `${preset}:${midi}:${sr}`
+  if (!cache.has(key)) cache.set(key, data)
+  return cache.get(key)
+}
+
 export function getSamplerBuffer(ctx, preset, midi) {
   return ctxCache(ctx, `smp:${preset}:${midi}`, () => toAudioBuffer(ctx, renderSamplerNote(preset, midi), SAMPLER_SR))
 }

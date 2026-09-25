@@ -1,6 +1,6 @@
 // Original arcade jingles (checkpoint, extended play, goal, countdown, go, time up, game over,
 // UI blips). Rendered offline in JS into stereo buffers with a tiny note synth + echo.
-import { TAU, mtof, rng, Biquad, softclip, oscSample, panMono, normalize, whiteNoise } from '../core/dsp.js'
+import { TAU, mtof, Biquad, softclip, oscSample, panMono, whiteNoise } from '../core/dsp.js'
 
 const N = (name) => {
   // 'C#5' → MIDI
@@ -373,5 +373,3 @@ export const JINGLES = {
     ),
 }
 
-// Exposed for tests / tooling.
-export const _internal = { N, rng }

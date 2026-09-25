@@ -22,7 +22,6 @@ export const STEPS_PER_BAR = 16
 
 export const INSTRUMENT_TYPES = ['drums', 'ep', 'pad', 'stab', 'bass', 'lead', 'mallet', 'piano', 'pluck']
 export const MONO_TYPES = new Set(['bass', 'lead'])
-export const CHORDAL_TYPES = new Set(['ep', 'pad', 'stab', 'piano', 'pluck', 'mallet'])
 // String parts default to GRID for these types and to SEQ for the rest (bass, lead, mallet).
 // Use { grid: '…' } or { seq: '…' } to be explicit.
 export const GRID_DEFAULT = new Set(['ep', 'pad', 'stab', 'piano', 'pluck'])

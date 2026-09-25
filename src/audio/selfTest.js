@@ -60,7 +60,21 @@ export function renderTrack(id, { seconds = 4, section = 'hook', sampleRate = SR
       const p = new TrackPlayer(ctx, track, mixer.buses.music)
       p.prewarm()
       p.start(0, { fade: 0, fromStep: fromStart ? 0 : p.sectionStep(section) })
-      p.scheduleUntil(seconds)
+      if (seconds <= 8 || !ctx.suspend) {
+        p.scheduleUntil(seconds)
+        return
+      }
+      // Long renders: schedule progressively like the realtime lookahead so the graph and
+      // automation timelines stay small (much faster than scheduling minutes up front).
+      p.scheduleUntil(1)
+      const quantum = 128 / ctx.sampleRate
+      for (let t = 0.5; t < seconds - 0.01; t += 0.5) {
+        const at = Math.round(t / quantum) * quantum
+        ctx.suspend(at).then(() => {
+          p.scheduleUntil(ctx.currentTime + 1)
+          ctx.resume()
+        })
+      }
     },
     sampleRate,
   )

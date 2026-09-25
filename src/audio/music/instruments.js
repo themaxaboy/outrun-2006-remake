@@ -6,7 +6,7 @@
 import { mtof } from '../core/dsp.js'
 import { createPanner } from '../core/env.js'
 import { getSamplerBuffer } from './samplers.js'
-import { getDrumBuffers, DRUM_LEVEL } from './drumkit.js'
+import { getDrumBuffer, DRUM_LEVEL } from './drumkit.js'
 import { createChorus } from './fx.js'
 
 // ── voice pool ────────────────────────────────────────────────────────────────────────────
@@ -91,11 +91,10 @@ export class DrumKit {
   constructor(ctx, dest, def = {}) {
     this.ctx = ctx
     this.dest = dest
-    this.bufs = getDrumBuffers(ctx)
     this.level = { ...DRUM_LEVEL, ...(def.levels || {}) }
   }
   play(t, ev) {
-    const buf = this.bufs[ev.drum]
+    const buf = getDrumBuffer(this.ctx, ev.drum)
     if (!buf) return
     const ctx = this.ctx
     const src = ctx.createBufferSource()
@@ -559,8 +558,3 @@ export class ParaSynth {
   }
 }
 
-export const PRESET_NAMES = {
-  ep: Object.keys(EP_PRESETS),
-  mono: Object.keys(MONO_PRESETS),
-  para: Object.keys(PARA_PRESETS),
-}
