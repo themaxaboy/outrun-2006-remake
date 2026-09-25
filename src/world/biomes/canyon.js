@@ -15,6 +15,7 @@ export default {
     { kind: 'rock', side: 'both', d: [8, 70], spacing: 19, jitter: 1, scale: [0.8, 3.5], collide: 0.9 },
     { kind: 'deadtree', side: 'both', d: [8, 50], spacing: 60, jitter: 1, scale: [0.8, 1.3], collide: 0.3 },
     { kind: 'shrub', side: 'both', d: [4, 40], spacing: 12, jitter: 1, scale: [0.4, 0.9], collide: 0, tint: 'dry' },
+    { kind: 'balloon', side: 'both', d: [90, 380], spacing: 360, jitter: 1, scale: [1, 1.4], collide: 0, air: [60, 170] },
     { kind: 'sign', side: 'both', d: [6, 6], spacing: 420, jitter: 0, scale: [1, 1], collide: 0.4 },
   ],
 }

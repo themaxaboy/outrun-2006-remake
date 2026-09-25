@@ -16,6 +16,7 @@ export default {
     { kind: 'shrub', side: 'both', d: [4, 30], spacing: 11, jitter: 1, scale: [0.7, 1.4], collide: 0 },
     { kind: 'rock', side: 'sea', d: [18, 60], spacing: 34, jitter: 1, scale: [1, 3], collide: 0 },
     { kind: 'villa', side: 'land', d: [45, 160], spacing: 170, jitter: 1, scale: [0.9, 1.3], collide: 0 },
+    { kind: 'sailboat', side: 'sea', d: [90, 380], spacing: 150, jitter: 1, scale: [0.9, 1.3], collide: 0, water: true },
     { kind: 'lamp', side: 'both', d: [2.8, 2.8], spacing: 60, jitter: 0, scale: [1, 1], collide: 0.35, onBarrier: true },
   ],
 }

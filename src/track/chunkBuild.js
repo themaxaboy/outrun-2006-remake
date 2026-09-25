@@ -323,7 +323,11 @@ export function placeProps(course, k, o, ctx, { density = 1, seed = 'or2r' } = {
           wz = fr.z + fr.nz * ex + Math.sin(fr.heading) * side * d
           if (ctx.parent) ctx.blend = smoothstep(0, 520, ss)
           wy = terrainHeight(ctx, wx, wz, d, side, edgeY)
-          if (ctx.waterLevel > -999 && wy < ctx.waterLevel + 0.6) continue
+          if (rule.water) {
+            if (ctx.waterLevel < -999 || wy > ctx.waterLevel - 1.5) continue
+            wy = ctx.waterLevel
+          } else if (ctx.waterLevel > -999 && wy < ctx.waterLevel + 0.6) continue
+          if (rule.air) wy += rng.range(rule.air[0], rule.air[1])
         }
         const yaw = rule.side === 'span' ? -fr.heading : rot
         list.push(wx - o.x, wy - o.y, wz - o.z, yaw, sc, tint)

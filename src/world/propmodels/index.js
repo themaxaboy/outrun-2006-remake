@@ -24,6 +24,8 @@ const BUILDERS = {
   billboard: (l) => S.billboard(l),
   blossom: (l) => S.blossom(l),
   maple: (l) => S.maple(l),
+  sailboat: (l) => S.sailboat(l),
+  balloon: (l) => S.balloon(l),
 }
 
 let cache = null

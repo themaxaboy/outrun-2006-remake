@@ -177,3 +177,54 @@ export function rockPile(lod = 0) {
   for (let i = 0; i < 3; i++) gb.add(lumpy(1, lod ? 0 : 1, 0.3, i + 5, 0.7), { color: '#8b8378', matrix: mat4(i * 0.9 - 0.9, 0.4, (i % 2) * 0.6, 0, i, 0, 1 - i * 0.2) })
   return gb.build()
 }
+
+export function sailboat(lod = 0) {
+  const gb = new GeoBuilder()
+  const hull = new THREE.CylinderGeometry(0.9, 0.35, 7, lod ? 6 : 10, 1)
+  hull.rotateX(Math.PI / 2)
+  hull.scale(1, 0.55, 1)
+  gb.add(hull, { color: '#f4f4f0', matrix: mat4(0, 0.35, 0) })
+  gb.add(new THREE.CylinderGeometry(0.06, 0.08, 9, 5), { color: '#c9c9c9', matrix: mat4(0, 4.8, -0.4) })
+  const sail = new THREE.BufferGeometry()
+  sail.setAttribute('position', new THREE.Float32BufferAttribute([0, 1.2, -0.3, 0, 9, -0.35, 0, 1.2, 3.2], 3))
+  sail.setIndex([0, 1, 2])
+  sail.computeVertexNormals()
+  gb.add(sail, { color: '#ffffff', sway: 0.15 })
+  const jib = new THREE.BufferGeometry()
+  jib.setAttribute('position', new THREE.Float32BufferAttribute([0, 1.3, -0.6, 0, 8, -0.5, 0, 1.3, -3.3], 3))
+  jib.setIndex([0, 2, 1])
+  jib.computeVertexNormals()
+  gb.add(jib, { color: '#ff6a3a', sway: 0.15 })
+  return gb.build()
+}
+
+export function balloon(lod = 0) {
+  const gb = new GeoBuilder()
+  const env = new THREE.SphereGeometry(7, lod ? 10 : 18, lod ? 8 : 14)
+  const p = env.attributes.position
+  for (let i = 0; i < p.count; i++) {
+    const y = p.getY(i)
+    const k = y < 0 ? 1 - Math.pow(-y / 7, 1.6) * 0.62 : 1
+    p.setXYZ(i, p.getX(i) * k, y * 1.15, p.getZ(i) * k)
+  }
+  env.computeVertexNormals()
+  const palettes = [['#ff3b30', '#ffd60a'], ['#0a84ff', '#ffffff'], ['#34c759', '#ff9f0a'], ['#bf5af2', '#ff375f']]
+  const [c1, c2] = palettes[Math.floor(Math.random() * palettes.length)]
+  const A = toLin(c1), B = toLin(c2)
+  gb.add(env, {
+    matrix: mat4(0, 14, 0),
+    colorFn: (x, y, z) => ((Math.floor((Math.atan2(z, x) + Math.PI) / (Math.PI / 6)) % 2) ? A : B),
+    sway: 0.2,
+  })
+  gb.add(new THREE.CylinderGeometry(0.9, 0.75, 1.1, 8), { color: '#8b5a2b', matrix: mat4(0, 4.2, 0), sway: 0.2 })
+  for (const [x, z] of [[0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]]) {
+    gb.add(new THREE.CylinderGeometry(0.03, 0.03, 3.6, 3), { color: '#3a2a1a', matrix: mat4(x * 1.1, 6.4, z * 1.1), sway: 0.2 })
+  }
+  return gb.build()
+}
+
+function toLin(hex) {
+  const n = parseInt(hex.slice(1), 16)
+  const f = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4) }
+  return [f((n >> 16) & 255), f((n >> 8) & 255), f(n & 255)]
+}

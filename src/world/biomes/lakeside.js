@@ -16,6 +16,8 @@ export default {
     { kind: 'broadleaf', side: 'both', d: [6, 30], spacing: 21, jitter: 1, scale: [0.8, 1.3], collide: 0.5 },
     { kind: 'shrub', side: 'both', d: [4, 20], spacing: 8, jitter: 1, scale: [0.6, 1.2], collide: 0 },
     { kind: 'cabin', side: 'land', d: [40, 120], spacing: 260, jitter: 1, scale: [1, 1.2], collide: 0 },
+    { kind: 'sailboat', side: 'lake', d: [70, 300], spacing: 220, jitter: 1, scale: [0.7, 1.0], collide: 0, water: true },
+    { kind: 'balloon', side: 'both', d: [80, 360], spacing: 520, jitter: 1, scale: [0.9, 1.3], collide: 0, air: [40, 120] },
     { kind: 'rock', side: 'lake', d: [10, 40], spacing: 45, jitter: 1, scale: [0.8, 2.2], collide: 0 },
   ],
 }
