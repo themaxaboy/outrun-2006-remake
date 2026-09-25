@@ -30,8 +30,37 @@ export class ChaseCam {
 
   reset() { this.initialized = false }
 
-  update(dt, poser, car, { slip = 0 } = {}) {
+  /** Cinematic shots (not user-selectable): orbit around the car, or a fixed trackside camera. */
+  _cinematic(dt, poser, car, course) {
     const cam = this.camera
+    const P = poser.position
+    this.cineT = (this.cineT || 0) + dt
+    if (this.mode === 'orbit') {
+      const a = poser.velYaw + Math.PI * 0.8 + this.cineT * 0.35
+      const r = 8.5 + Math.sin(this.cineT * 0.3) * 1.5
+      cam.position.set(P.x + Math.sin(a) * r, P.y + 2.2 + Math.sin(this.cineT * 0.5) * 0.6, P.z - Math.cos(a) * r)
+      cam.lookAt(P.x, P.y + 0.7, P.z)
+      this.fov = damp(this.fov, 44, 2, dt)
+    } else {
+      // trackside: pick a spot ahead at the roadside, hold it until the car passes
+      if (!this.spot || !course || this.spot.course !== course || car.s > this.spot.s + 25) {
+        const fr = course.sample(car.s + 140 + car.v * 1.2)
+        const side = Math.random() < 0.5 ? -1 : 1
+        const x = side * (fr.hw + 5)
+        this.spot = { course, s: fr.s, pos: { x: fr.x + fr.nx * x, y: fr.y + fr.ny * x + 1.4, z: fr.z + fr.nz * x } }
+      }
+      cam.position.set(this.spot.pos.x, this.spot.pos.y, this.spot.pos.z)
+      cam.lookAt(P.x, P.y + 0.8, P.z)
+      const d = cam.position.distanceTo(P)
+      this.fov = damp(this.fov, Math.max(12, Math.min(55, 900 / (d + 8))), 4, dt)
+    }
+    cam.up.set(0, 1, 0)
+    if (Math.abs(cam.fov - this.fov) > 0.01) { cam.fov = this.fov; cam.updateProjectionMatrix() }
+  }
+
+  update(dt, poser, car, { slip = 0, course = null } = {}) {
+    const cam = this.camera
+    if (this.mode === 'orbit' || this.mode === 'trackside') return this._cinematic(dt, poser, car, course)
     const vn = clamp(car.v / car.def.vmax, 0, 1.1)
     const drifting = car.fsm === FSM.DRIFT || car.fsm === FSM.ENTRY
     // yaw target: velocity heading, partially following the body during slides

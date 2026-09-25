@@ -31,6 +31,7 @@ import { Score } from './score.js'
 import { WorldExtras } from '../world/extras.js'
 import { Showroom } from './showroom.js'
 import * as rankings from './rankings.js'
+import { GhostRecorder, bestGhost, ghostAt, saveGhost } from './ghost.js'
 import { Traffic } from '../traffic/traffic.js'
 import { buildFallbackTrafficModels } from '../traffic/fallbackModels.js'
 
@@ -323,6 +324,7 @@ export class Game {
       startS: params.startS || 20,
     })
     this.chunks.update(this.route, this.car.s, this.camera.position, Infinity)
+    await this._setupGhost()
     this.state = 'countdown'
     this.countdownT = params.autotest || params.bench ? 0.01 : 3.6
     this._lastCount = null
@@ -363,6 +365,47 @@ export class Game {
   }
 
   get rankings() { return rankings }
+
+  async _setupGhost() {
+    if (this.ghostRig) { this.scene.remove(this.ghostRig.root); this.ghostRig.dispose?.(); this.ghostRig = null }
+    this.ghost = null
+    this.ghostRec = this.mode === 'timeattack' ? new GhostRecorder() : null
+    if (this.mode !== 'timeattack') return
+    const g = bestGhost()
+    if (!g) return
+    this.ghost = g
+    const rig = await this._buildRig(getCar(g.car), g.color || '#9ff3ff', 'metallic', 'low')
+    rig.root.traverse((o) => {
+      if (o.isMesh) {
+        o.castShadow = false
+        const ms = Array.isArray(o.material) ? o.material : [o.material]
+        o.material = ms.map((m) => { const c = m.clone(); c.transparent = true; c.opacity = 0.32; c.depthWrite = false; return c }).at(0)
+      }
+    })
+    this.ghostRig = rig
+    this.scene.add(rig.root)
+  }
+
+  _updateGhost() {
+    if (!this.ghostRig) return
+    const t = this.timer.total
+    const st = ghostAt(this.ghost, t, this._gs || (this._gs = {}))
+    let course = null
+    if (st) {
+      const idx = st.stageIdx
+      const myIdx = this.route.visited.length - 1
+      const id = this.ghost.visited[idx]
+      if (idx === myIdx && id === this.course.stage.id) course = this.course
+      else if (idx === myIdx + 1 && this.course.children) course = this.course.children.find((c) => c.stage.id === id) || null
+      else if (idx === myIdx - 1 && this.route.previous?.stage.id === id) course = this.route.previous
+    }
+    this.ghostRig.root.visible = !!course && this.state !== 'goal'
+    if (!course) return
+    const fr = course.sample(st.s, this._gfr || (this._gfr = {}))
+    this.ghostRig.root.position.set(fr.x + fr.nx * st.x, fr.y + fr.ny * st.x, fr.z + fr.nz * st.x)
+    this.ghostRig.root.rotation.set(0, -(fr.heading + st.yaw), 0)
+    this.ghostRig.update(1 / 60, { speed: 40, steerAngle: 0, brake: 0, lights: 0 })
+  }
 
   pause() {
     if (this.state !== 'race' && this.state !== 'countdown') return
@@ -449,6 +492,7 @@ export class Game {
     if (this.state === 'race') {
       if (this.timer.tick(dt)) this._timeUp()
       this.score.tick(dt, car.v)
+      this.ghostRec?.sample(this.timer.total, this.route.visited.length - 1, car.s, car.x, car.psi + car.beta)
     }
     if (this.state === 'timeup' && car.v < 0.5 && !this._overSent) {
       this._overSent = true
@@ -495,10 +539,15 @@ export class Game {
     this.state = 'goal'
     this.hud.banner('GOAL!', this.mode === 'outrun' ? `TIME BONUS  ${bonus.toLocaleString('en-US')}` : '', 5, 'good')
     this.audio?.sfx?.('goal')
-    this.cam.mode = 'far'
+    this.cam.mode = 'orbit'
+    this.cam.cineT = 0
     const col = Number(this.course.stage.id.split('-')[1])
     this.result = this._makeResult(true, col)
     rankings.unlock('nebula')
+    if (this.ghostRec) {
+      const saved = saveGhost(col, this.ghostRec.toGhost({ time: this.timer.total, car: this.carDef.id, color: this._color, visited: [...this.route.visited] }))
+      this.result.newGhost = saved
+    }
     setTimeout(() => {
       this.hud.show(false)
       this.input.showTouch(false)
@@ -696,7 +745,14 @@ export class Game {
 
     // stage blend
     if (this.course.parent) this.atmosphere.setBlend(smoothstep(0, 520, car.s))
-    this.cam.update(frameDt, poser, car, { slip: car.slipActive ? 1 : 0 })
+    if (this.state === 'attract') {
+      // title-screen attract mode: cycle through camera shots
+      this._attractT = (this._attractT || 0) + frameDt
+      const shots = ['chase', 'trackside', 'far', 'orbit', 'trackside', 'bumper']
+      const want = shots[Math.floor(this._attractT / 7) % shots.length]
+      if (this.cam.mode !== want) { this.cam.mode = want; this.cam.spot = null; this.cam.reset() }
+    }
+    this.cam.update(frameDt, poser, car, { slip: car.slipActive ? 1 : 0, course: this.course })
     this.atmosphere.update(frameDt, this.camera, poser.position)
     this.post.applyLook(look)
     if (this.post.hasSpeed) {
@@ -710,6 +766,7 @@ export class Game {
     this.mats.roadMat.userData.uniforms.uWet.value = look.wet
     this.extras.update(frameDt, this.camera, poser, car, this.course, look)
     this.traffic?.render(alpha, look.night)
+    this._updateGhost()
   }
 
   _updateHud(dt) {

@@ -11,7 +11,7 @@ export function createPropMaterial() {
     shader.vertexShader = shader.vertexShader
       .replace(
         '#include <common>',
-        '#include <common>\nuniform float uTime;\nuniform float uWind;\nattribute float aSway;\nattribute float aEmit;\nvarying float vEmit;',
+        '#include <common>\nuniform float uTime;\nuniform float uWind;\nattribute float aSway;\nattribute float aEmit;\nvarying float vEmit;\nvarying vec3 vLocal;',
       )
       .replace(
         '#include <begin_vertex>',
@@ -25,13 +25,31 @@ float ph = dot(ip, vec3(0.071, 0.0, 0.053));
 float wv = sin(uTime * 1.55 + ph) + 0.45 * sin(uTime * 3.9 + ph * 1.7);
 transformed.x += wv * aSway * 0.14 * uWind;
 transformed.z += cos(uTime * 1.25 + ph) * aSway * 0.09 * uWind;
-vEmit = aEmit;`,
+vEmit = aEmit;
+vLocal = position;`,
       )
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uNight;\nvarying float vEmit;')
+      .replace('#include <common>', '#include <common>\nuniform float uNight;\nvarying float vEmit;\nvarying vec3 vLocal;\nfloat pHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
+      .replace(
+        '#include <color_fragment>',
+        `#include <color_fragment>
+float winLit = 0.0;
+float isWin = step(0.5, vEmit) * step(vEmit, 0.6);
+if (isWin > 0.5) {
+  // procedural window grid for towers (aEmit = 0.55): frames by day, random lit rooms by night
+  float hx = vLocal.x + vLocal.z;
+  vec2 cell = vec2(floor(hx / 2.6), floor(vLocal.y / 3.4));
+  vec2 f = vec2(fract(hx / 2.6), fract(vLocal.y / 3.4));
+  float pane = step(0.14, f.x) * step(f.x, 0.86) * step(0.2, f.y) * step(f.y, 0.84);
+  diffuseColor.rgb *= mix(1.45, 0.5, pane);
+  winLit = pane * step(0.42, pHash(cell)) * (0.6 + 0.4 * pHash(cell + 7.0));
+}`,
+      )
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.12, isWin * 0.8);')
       .replace(
         '#include <emissivemap_fragment>',
-        '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * vEmit * uNight * 3.0;',
+        `#include <emissivemap_fragment>
+totalEmissiveRadiance += isWin > 0.5 ? vec3(1.0, 0.82, 0.55) * winLit * uNight * 2.2 : diffuseColor.rgb * vEmit * uNight * 3.0;`,
       )
   }
   mat.customProgramCacheKey = () => 'props-v1'
