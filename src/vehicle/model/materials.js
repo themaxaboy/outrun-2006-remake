@@ -252,7 +252,7 @@ export function createTaillightMaterial() {
   return new THREE.MeshStandardMaterial({
     name: 'Taillight',
     color: '#8a0c12',
-    emissive: '#ff1408',
+    emissive: '#ff0206',
     emissiveIntensity: 0.6,
     metalness: 0.1,
     roughness: 0.18,

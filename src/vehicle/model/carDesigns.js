@@ -20,16 +20,16 @@ function aurora(def) {
     body: {
       zNose: -L, zTail: L,
       nose: { len: 0.15, m: 3.4, yc: 0.68 },
-      tail: { len: 0.09, m: 3.4, yc: 0.55 },
+      tail: { len: 0.06, m: 4, yc: 0.55 },
       W: [[-L, 0.74], [-L + 0.18, 0.865], [-L + 0.45, 0.935], [fa - 0.1, 0.968], [fa, 0.972], [-1.0, 0.952], [-0.55, 0.918], [0.05, 0.918], [0.55, 0.952], [1.0, 0.98], [ra, 0.985], [1.8, 0.976], [L, 0.94]],
       top: [[-L, 0.43], [-L + 0.12, 0.49], [-L + 0.42, 0.565], [fa, 0.67], [-1.05, 0.75], [-0.6, 0.785], [0.0, 0.795], [0.6, 0.825], [1.1, 0.87], [1.6, 0.9], [2.05, 0.918], [L, 0.93]],
       mid: [[-L, 0.3], [-L + 0.4, 0.45], [fa, 0.56], [-0.5, 0.55], [0.5, 0.56], [ra, 0.6], [L, 0.6]],
-      bot: [[-L, 0.15], [-L + 0.16, 0.1], [L - 0.62, 0.1], [L - 0.3, 0.16], [L - 0.08, 0.25], [L, 0.27]],
-      nUp: [[-L, 2.8], [fa, 3.9], [-0.6, 3.4], [0.3, 3.3], [ra, 4.0], [L, 4.6]],
+      bot: [[-L, 0.15], [-L + 0.16, 0.1], [L - 0.7, 0.1], [L - 0.35, 0.17], [L - 0.08, 0.28], [L, 0.3]],
+      nUp: [[-L, 3.0], [fa, 4.6], [-0.6, 4.2], [0.3, 4.2], [ra, 4.8], [L, 5.4]],
       nDn: [[-L, 3.0], [-L + 0.6, 5], [L - 0.6, 5], [L, 4.0]],
-      tumble: [[-L, 0.02], [fa, 0.05], [0, 0.07], [ra, 0.05], [L, 0.04]],
-      tuck: [[-L, 0.02], [0, 0.05], [L, 0.03]],
-      crown: [[-L + 0.05, 0.01], [-L + 0.4, 0.08], [fa, 0.15], [-0.9, 0.09], [-0.55, 0.0], [0.4, 0.0], [0.9, 0.05], [ra, 0.08], [1.9, 0.045], [L, 0.015]],
+      tumble: [[-L, 0.03], [fa, 0.07], [0, 0.1], [ra, 0.08], [L, 0.06]],
+      tuck: [[-L, 0.02], [0, 0.06], [L, 0.04]],
+      crown: [[-L + 0.05, 0.01], [-L + 0.4, 0.08], [fa, 0.15], [-0.9, 0.09], [-0.55, 0.0], [0.4, 0.0], [0.9, 0.07], [ra, 0.11], [1.9, 0.07], [L, 0.03]],
       crownAt: 0.8,
       crownW: 0.18,
       scoops: [{ z0: 0.22, z1: 0.92, y0: 0.4, y1: 0.7, depth: 0.08, slant: 0.5, ez: 0.12, ey: 0.06, ramp: true }],
@@ -47,9 +47,9 @@ function aurora(def) {
       splitter: { y: 0.075, thick: 0.016, off: 0.028, inset: 0.97 },
       skirts: { y: 0.1, h: 0.11, out: 0.035 },
       diffuser: { z0: L - 0.62, halfW: 0.62, yLow: 0.1, fins: 5 },
-      mirrors: { z: -0.66, y: 0.92, x: 1.03, len: 0.21, h: 0.075, d: 0.12, stalkX: 0.84, stalkY: 0.8 },
+      mirrors: { z: -0.7, y: 0.88, x: 1.02, len: 0.2, h: 0.075, d: 0.12, stalkX: 0.84, stalkY: 0.8 },
       lip: { z: L - 0.1, span: 0.82, h: 0.035, len: 0.13 },
-      exhausts: { pts: [[0.15, 0.345]], r: 0.05 },
+      exhausts: { pts: [[0.15, 0.37]], r: 0.052 },
     },
     decals: [
       // headlights: slim slanted units on the nose corners
@@ -69,12 +69,12 @@ function aurora(def) {
       // side scoop
       { frame: 'side', shape: ['rquad', [[0.42, 0.44], [0.9, 0.47], [0.84, 0.66], [0.55, 0.68]], 5], g: 'trim', gap: 0.002, mirror: true },
       // rear: taillight bar in a smoked housing, black upper fascia with slats, black lower
-      { frame: 'rear', shape: ['strip', [[-0.88, 0.845], [0, 0.845], [0.88, 0.845]], 0.03], g: 'trim', gap: 0.003, extrude: 0.005 },
-      { frame: 'rear', shape: ['strip', [[-0.86, 0.847], [0, 0.847], [0.86, 0.847]], 0.02], g: 'tail', gap: 0.007 },
+      { frame: 'rear', shape: ['strip', [[-0.9, 0.84], [0, 0.84], [0.9, 0.84]], 0.036], g: 'trim', gap: 0.003, extrude: 0.005 },
+      { frame: 'rear', shape: ['strip', [[-0.88, 0.845], [0, 0.845], [0.88, 0.845]], 0.024], g: 'tail', gap: 0.007 },
       { frame: 'rear', shape: ['strip', [[0.66, 0.812], [0.84, 0.812], [0.87, 0.78]], 0.009], g: 'tail', gap: 0.008, mirror: true },
       { frame: 'rear', shape: ['rquad', [[-0.66, 0.52], [0.66, 0.52], [0.7, 0.78], [-0.7, 0.78]], 8], g: 'trim', gap: 0.003 },
       ...[0.575, 0.63, 0.685].map((y) => ({ frame: 'rear', shape: ['strip', [[-0.6, y], [0.6, y]], 0.008], g: 'glass', gap: 0.007, minDetail: 1 })),
-      { frame: 'rear', shape: ['rquad', [[-0.76, 0.26], [0.76, 0.26], [0.78, 0.44], [-0.78, 0.44]], 8], g: 'trim', gap: 0.003 },
+      { frame: 'rear', shape: ['rquad', [[-0.8, 0.3], [0.8, 0.3], [0.82, 0.46], [-0.82, 0.46]], 8], g: 'trim', gap: 0.003 },
       // engine louvres
       ...[1.72, 1.8, 1.88, 1.96].map((z) => ({ frame: 'top', shape: ['strip', [[-0.42, z], [0.42, z]], 0.018], g: 'trim', gap: 0.003, minDetail: 1 })),
     ],
@@ -127,7 +127,7 @@ function vento(def) {
       splitter: { y: 0.085, thick: 0.014, off: 0.018, inset: 0.9 },
       skirts: { y: 0.115, h: 0.08, out: 0.022 },
       diffuser: { z0: L - 0.5, halfW: 0.5, yLow: 0.11, fins: 3, finH: 0.05 },
-      mirrors: { z: -0.6, y: 0.87, x: 1.02, len: 0.18, h: 0.075, d: 0.1, stalkX: 0.82, stalkY: 0.76 },
+      mirrors: { z: -0.62, y: 0.84, x: 1.01, len: 0.18, h: 0.072, d: 0.1, stalkX: 0.84, stalkY: 0.76 },
       lip: { z: L - 0.14, span: 0.72, h: 0.022, len: 0.1, g: 'paint' },
       exhausts: { pts: [[0.09, 0.3]], r: 0.042 },
       cockpit: { seatX: 0.32, seatY: 0.42, seatZ: 0.26, wheelY: 0.72, wheelZ: -0.16, dash: { c: [0, 0.66, -0.34], size: [1.1, 0.14, 0.16] } },
@@ -174,11 +174,11 @@ function stradale(def) {
     body: {
       zNose: -L, zTail: L,
       nose: { len: 0.16, m: 3.2, yc: 0.62 },
-      tail: { len: 0.1, m: 3.6, yc: 0.55 },
+      tail: { len: 0.07, m: 4, yc: 0.55 },
       W: [[-L, 0.74], [-L + 0.22, 0.875], [-L + 0.55, 0.935], [fa, 0.962], [-0.75, 0.935], [-0.1, 0.915], [0.6, 0.94], [ra, 0.978], [L - 0.35, 0.965], [L, 0.925]],
       top: [[-L, 0.5], [-L + 0.14, 0.57], [-L + 0.5, 0.645], [fa, 0.7], [-0.85, 0.745], [-0.42, 0.78], [0.2, 0.8], [0.9, 0.83], [ra, 0.86], [L - 0.35, 0.89], [L - 0.1, 0.91], [L, 0.91]],
       mid: [[-L, 0.36], [-L + 0.5, 0.5], [fa, 0.56], [0, 0.55], [ra, 0.6], [L, 0.62]],
-      bot: [[-L, 0.18], [-L + 0.2, 0.12], [L - 0.55, 0.12], [L - 0.2, 0.18], [L, 0.28]],
+      bot: [[-L, 0.18], [-L + 0.2, 0.12], [L - 0.6, 0.12], [L - 0.25, 0.2], [L - 0.05, 0.3], [L, 0.32]],
       nUp: [[-L, 2.8], [fa, 3.6], [-0.3, 3.2], [0.6, 3.2], [ra, 3.8], [L, 4.4]],
       nDn: [[-L, 3.2], [-L + 0.6, 5], [L - 0.6, 5], [L, 4]],
       tumble: [[-L, 0.03], [fa, 0.05], [0, 0.07], [ra, 0.06], [L, 0.05]],
@@ -204,10 +204,10 @@ function stradale(def) {
     parts: {
       splitter: { y: 0.09, thick: 0.014, off: 0.02, inset: 0.94 },
       skirts: { y: 0.115, h: 0.09, out: 0.024, g: 'trim' },
-      diffuser: { z0: L - 0.55, halfW: 0.55, yLow: 0.12, fins: 3, finH: 0.05 },
-      mirrors: { z: -0.18, y: 0.95, x: 1.03, len: 0.2, h: 0.08, d: 0.11, stalkX: 0.82, stalkY: 0.83 },
+      diffuser: { z0: L - 0.6, halfW: 0.55, yLow: 0.12, fins: 3, finH: 0.05 },
+      mirrors: { z: -0.2, y: 0.9, x: 1.02, len: 0.2, h: 0.078, d: 0.11, stalkX: 0.84, stalkY: 0.82 },
       lip: { z: L - 0.07, span: 0.78, h: 0.04, len: 0.13, g: 'paint' },
-      exhausts: { pts: [[0.52, 0.29], [0.64, 0.29]], r: 0.04 },
+      exhausts: { pts: [[0.5, 0.36], [0.63, 0.36]], r: 0.042 },
     },
     decals: [
       // swept headlights along the fender fronts
@@ -228,12 +228,12 @@ function stradale(def) {
       { frame: 'side', shape: ['rquad', [[-0.95, 0.44], [-0.62, 0.46], [-0.6, 0.56], [-0.9, 0.57]], 5], g: 'trim', gap: 0.003, mirror: true },
       ...[0.475, 0.505, 0.535].map((y) => ({ frame: 'side', shape: ['strip', [[-0.9, y], [-0.63, y + 0.012]], 0.005], g: 'chrome', gap: 0.006, mirror: true, minDetail: 1 })),
       // twin taillight strips per side (L-shaped), smoked centre panel
-      { frame: 'rear', shape: ['strip', [[0.3, 0.79], [0.84, 0.79], [0.88, 0.72]], 0.026], g: 'trim', gap: 0.003, extrude: 0.005, mirror: true },
-      { frame: 'rear', shape: ['strip', [[0.32, 0.795], [0.83, 0.795], [0.865, 0.735]], 0.011], g: 'tail', gap: 0.007, mirror: true },
-      { frame: 'rear', shape: ['strip', [[0.45, 0.76], [0.8, 0.76]], 0.006], g: 'tail', gap: 0.007, mirror: true },
-      { frame: 'rear', shape: ['strip', [[-0.24, 0.79], [0.24, 0.79]], 0.018], g: 'glass', gap: 0.004 },
+      { frame: 'rear', shape: ['rquad', [[0.26, 0.72], [0.86, 0.7], [0.88, 0.83], [0.28, 0.84]], 6], g: 'trim', gap: 0.003, extrude: 0.005, mirror: true },
+      { frame: 'rear', shape: ['strip', [[0.3, 0.805], [0.84, 0.8], [0.87, 0.72]], 0.013], g: 'tail', gap: 0.007, mirror: true },
+      { frame: 'rear', shape: ['strip', [[0.42, 0.755], [0.8, 0.75]], 0.009], g: 'tail', gap: 0.007, mirror: true },
+      { frame: 'rear', shape: ['strip', [[-0.3, 0.79], [0.3, 0.79]], 0.02], g: 'glass', gap: 0.004 },
       // rear lower + exhaust surrounds
-      { frame: 'rear', shape: ['rquad', [[-0.78, 0.25], [0.78, 0.25], [0.8, 0.39], [-0.8, 0.39]], 8], g: 'trim', gap: 0.003 },
+      { frame: 'rear', shape: ['rquad', [[-0.8, 0.3], [0.8, 0.3], [0.82, 0.45], [-0.82, 0.45]], 8], g: 'trim', gap: 0.003 },
     ],
   }
 }

@@ -15,15 +15,20 @@ function frameOf(f) {
   return frameFrom(f.d, f.up || [0, 1, 0], f.o || [0, 0, 0])
 }
 
-function shapeOf(s, detail) {
+function shapeOf(s, q) {
   const [kind, ...a] = s
-  const hi = detail > 0
+  const hi = q.detail > 0
+  const step = q.decalStep ?? (hi ? 0.022 : 0.06)
+  const maxSide = q.decalMaxSide ?? 24
+  const ringStep = q.decalRingStep ?? (hi ? 0.035 : 0.1)
+  const maxRings = q.decalMaxRings ?? 10
+  const minSide = hi ? 8 : q.decalStep ? 2 : 4
   switch (kind) {
     case 'ellipse': {
       const [cx, cy, rx, ry, o = {}] = a
       const per = 2 * Math.PI * Math.max(rx, ry)
-      const segs = Math.round(Math.min(64, Math.max(hi ? 20 : 10, per / (hi ? 0.02 : 0.05))))
-      const rings = Math.round(Math.min(8, Math.max(hi ? 3 : 2, Math.max(rx, ry) / (hi ? 0.04 : 0.1))))
+      const segs = 4 * Math.round(Math.min(maxSide, Math.max(minSide * 0.6, per / 4 / step)))
+      const rings = Math.round(Math.min(maxRings, Math.max(hi ? 3 : 1, Math.max(rx, ry) / ringStep)))
       return shapeEllipse(cx, cy, rx, ry, { segs, rings, ...o })
     }
     case 'rquad': {
@@ -31,12 +36,12 @@ function shapeOf(s, detail) {
       const [quad, n = 6] = a
       let per = 0, span = 0
       for (let i = 0; i < 4; i++) {
-        const p = quad[i], q = quad[(i + 1) % 4]
-        per += Math.hypot(q[0] - p[0], q[1] - p[1])
+        const p = quad[i], r = quad[(i + 1) % 4]
+        per += Math.hypot(r[0] - p[0], r[1] - p[1])
         span = Math.max(span, Math.hypot(quad[(i + 2) % 4][0] - p[0], quad[(i + 2) % 4][1] - p[1]))
       }
-      const segs = 4 * Math.round(Math.min(24, Math.max(hi ? 8 : 4, per / 4 / (hi ? 0.022 : 0.06))))
-      const rings = Math.round(Math.min(10, Math.max(hi ? 3 : 2, span / 2 / (hi ? 0.035 : 0.1))))
+      const segs = 4 * Math.round(Math.min(maxSide, Math.max(minSide, per / 4 / step)))
+      const rings = Math.round(Math.min(maxRings, Math.max(hi ? 3 : 1, span / 2 / ringStep)))
       return shapeEllipse(0, 0, 1, 1, { n, quad, segs, rings })
     }
     case 'quad': {
@@ -44,8 +49,8 @@ function shapeOf(s, detail) {
       return shapeQuad(quad, hi ? rows : 2, hi ? cols : Math.max(2, Math.ceil(cols / 2)))
     }
     case 'strip': {
-      const [line, hw, cols = 2] = a
-      return shapeStrip(line, hw, cols)
+      const [line, hw, cols = 2, stp] = a
+      return shapeStrip(line, hw, cols, stp ?? (q.decalStep ? q.decalStep * 2 : hi ? 0.03 : 0.08))
     }
     default:
       throw new Error('unknown decal shape ' + kind)
@@ -58,9 +63,9 @@ export function decals(ctx, list) {
   for (const d of list) {
     if (d.minDetail !== undefined && q.detail < d.minDetail) continue
     const m = acc.mark()
-    projectDecal(acc, d.target === 'all' ? ctx.targetAll || target : target, frameOf(d.frame), shapeOf(d.shape, q.detail), {
+    projectDecal(acc, target, frameOf(d.frame), shapeOf(d.shape, q), {
       group: d.g,
-      gap: d.gap ?? 0.004,
+      gap: (d.gap ?? 0.004) * (q.decalGap ?? 1),
       extrude: q.detail > 0 ? d.extrude ?? 0 : 0,
       uvScale: 1,
     })
@@ -395,7 +400,7 @@ export function mirrors(ctx, f) {
   const sm = new THREE.Matrix4().compose(
     new THREE.Vector3((sx0 + sx1) / 2, (sy0 + sy1) / 2, f.z + 0.015),
     new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.atan2(sy1 - sy0, sx1 - sx0))),
-    new THREE.Vector3(Math.hypot(sx1 - sx0, sy1 - sy0) + 0.03, 0.016, 0.07),
+    new THREE.Vector3(Math.hypot(sx1 - sx0, sy1 - sy0) + 0.03, 0.028, 0.075),
   )
   acc.addGeometry(f.stalkG || 'paint', st, { matrix: sm })
   st.dispose()

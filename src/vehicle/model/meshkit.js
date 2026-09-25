@@ -117,7 +117,17 @@ export class MeshAcc {
       det = matrix.determinant()
     }
     const base = g.pos.length / 3
+    // only copy vertices that triangles reference (primitives often carry unused seam/pole vertices)
+    let remap = null
+    if (geo.index) {
+      const used = new Uint8Array(pos.count)
+      for (const k of geo.index.array) used[k] = 1
+      remap = new Int32Array(pos.count).fill(-1)
+      let n = 0
+      for (let i = 0; i < pos.count; i++) if (used[i]) remap[i] = n++
+    }
     for (let i = 0; i < pos.count; i++) {
+      if (remap && remap[i] < 0) continue
       _v.fromBufferAttribute(pos, i)
       if (nrm) _n.fromBufferAttribute(nrm, i)
       else _n.set(0, 1, 0)
@@ -141,7 +151,7 @@ export class MeshAcc {
     const push = (a, b, c) => (flipW ? g.idx.push(base + a, base + c, base + b) : g.idx.push(base + a, base + b, base + c))
     if (geo.index) {
       const ix = geo.index.array
-      for (let i = 0; i < ix.length; i += 3) push(ix[i], ix[i + 1], ix[i + 2])
+      for (let i = 0; i < ix.length; i += 3) push(remap[ix[i]], remap[ix[i + 1]], remap[ix[i + 2]])
     } else {
       for (let i = 0; i < pos.count; i += 3) push(i, i + 1, i + 2)
     }
@@ -560,7 +570,7 @@ export function shapeStrip(line, halfW, cols = 2, step = 0.03) {
  * dot products with a and b. extrude: add a side wall down into the surface (raised badge look).
  * Returns the projected points (null where the ray missed).
  */
-export function projectDecal(acc, target, frame, shape, { group, gap = 0.004, extrude = 0, gapFn = null, uvScale = 1, back = 3 } = {}) {
+export function projectDecal(acc, target, frame, shape, { group, gap = 0.004, extrude = 0, gapFn = null, uvScale = 1, back = 40 } = {}) {
   const { a, b, d } = frame
   const o = frame.o || [0, 0, 0]
   const { rows, cols, closed, pts } = shape

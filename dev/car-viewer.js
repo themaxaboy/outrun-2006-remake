@@ -110,6 +110,7 @@ async function load() {
     const ms = performance.now() - t0
     rig.setShadow(true)
     scene.add(rig.root)
+    if (P.get('debug') === 'backface') addBackfaceProbe(rig.root)
     rigs = [rig]
     const { tris, draws } = countTris(rig.root)
     const d = rig.dims
@@ -136,6 +137,22 @@ function frame(now) {
   requestAnimationFrame(frame)
 }
 
+// Debug: red back-face copies drawn slightly behind; any red visible = hole or inverted normal.
+function addBackfaceProbe(root) {
+  const red = new THREE.MeshBasicMaterial({ color: '#ff0000', side: THREE.BackSide, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 })
+  const list = []
+  root.traverse((o) => o.isMesh && list.push(o))
+  for (const o of list) {
+    if (o.material.side === THREE.DoubleSide) continue
+    const c = o.isInstancedMesh ? new THREE.InstancedMesh(o.geometry, red, o.count) : new THREE.Mesh(o.geometry, red)
+    if (o.isInstancedMesh) c.instanceMatrix = o.instanceMatrix
+    c.frustumCulled = false
+    o.parent.add(c)
+    c.position.copy(o.position)
+    c.quaternion.copy(o.quaternion)
+  }
+}
+
 function trafficPreviewMaterial(paint) {
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45, metalness: 0.15 })
   const uPaint = { value: new THREE.Color(paint) }
@@ -147,7 +164,7 @@ function trafficPreviewMaterial(paint) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform vec3 uPaint;\nvarying float vPaint;\nvarying float vLight;')
       .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * uPaint, vPaint);')
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor * step(0.5, vLight) * 1.5;')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor.rgb * step(0.5, vLight) * 1.5;')
   }
   return m
 }
