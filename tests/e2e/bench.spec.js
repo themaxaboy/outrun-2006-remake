@@ -24,7 +24,7 @@ for (const preset of ['low', 'medium', 'high', 'ultra']) {
         textures: st.perf.textures,
         programs: st.perf.programs,
         updateP95ms: +st.summary.upd95.toFixed(2),
-        swiftshaderFps: +st.summary.fps.toFixed(1),
+        softwareFps: +st.summary.fps.toFixed(1), // SwiftShader — NOT representative of GPU hardware
       }
     })
   }

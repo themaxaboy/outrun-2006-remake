@@ -712,7 +712,7 @@ export class Game {
       this.showroom.update(frameDt)
       this.renderer.info.reset()
       this.post.render(frameDt)
-      this.perf.frame(frameDt * 1000, performance.now() - t0, this.renderer)
+      this.perf.frame(this.loop.frameDt * 1000, performance.now() - t0, this.renderer)
       return
     }
 
@@ -741,7 +741,7 @@ export class Game {
     if (params.hide.length) for (const n of params.hide) { const o = this.scene.getObjectByName(n); if (o) o.visible = false }
     if (params.nopost) this.renderer.render(this.scene, this.camera)
     else this.post.render(frameDt)
-    this.perf.frame(frameDt * 1000, updateMs, this.renderer)
+    this.perf.frame(this.loop.frameDt * 1000, updateMs, this.renderer) // real frame delta (not virtual time)
     if (this.perf.el) {
       this.perf.extra.preset = `${this.preset.id} x${this.dynres.scale.toFixed(2)}`
       this.perf.extra.speed = `${(car.v * KMH).toFixed(0)} km/h  ${['GRIP', 'ENTRY', 'DRIFT', 'RECOVER', 'SPIN', 'CRASH'][car.fsm]}`
