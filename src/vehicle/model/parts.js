@@ -275,10 +275,11 @@ export function diffuser(ctx, f) {
   gridPart(acc, g, rows)
   acc.backfaces(mk, g)
   const n = q.detail ? f.fins ?? 5 : Math.min(3, f.fins ?? 5)
-  const t = 0.012
+  // strakes: thick and shallow so they read as fins (not needles) from the chase camera
+  const t = 0.035
   for (let i = 0; i < n; i++) {
     const x = n === 1 ? 0 : -hw * 0.88 + (hw * 1.76 * i) / (n - 1)
-    const za = z0 + 0.12, zb = z1, h = f.finH ?? 0.06
+    const za = z0 + 0.12, zb = z1, h = Math.min(0.035, (f.finH ?? 0.06) * 0.55)
     const top = [], bot = []
     for (let k = 0; k <= 4; k++) {
       const z = za + ((zb - za) * k) / 4

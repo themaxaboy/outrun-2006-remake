@@ -218,10 +218,33 @@ export class Game {
       this.atmosphere.applyFog(m)
       if (m.envMapIntensity !== undefined) m.envMapIntensity = (m.userData.baseEnvI ??= m.envMapIntensity) * 2
     }
+    if (rig.paintMaterial) this._applyRim(rig.paintMaterial)
     rig.setShadow?.(this.preset.shadows)
     this.rig = rig
     this.scene.add(rig.root)
     return rig
+  }
+
+  /** Night-time Fresnel rim on the car paint (sky-tinted) so the silhouette reads in the dark. */
+  _applyRim(material) {
+    this._rimU ||= { uRim: { value: 0 }, uRimColor: { value: new THREE.Vector3(0.3, 0.4, 0.8) } }
+    const u = this._rimU
+    const prev = material.onBeforeCompile
+    material.onBeforeCompile = (shader, r) => {
+      if (prev) prev(shader, r)
+      shader.uniforms.uRim = u.uRim
+      shader.uniforms.uRimColor = u.uRimColor
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform float uRim;\nuniform vec3 uRimColor;')
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+{
+  float rimF = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 3.0);
+  totalEmissiveRadiance += uRimColor * rimF * uRim;
+}`)
+    }
+    const prevKey = material.customProgramCacheKey?.bind(material)
+    material.customProgramCacheKey = () => (prevKey ? prevKey() : '') + '|rim'
+    material.needsUpdate = true
   }
 
   _applyPreset() {
@@ -797,6 +820,10 @@ export class Game {
     this.mats.propMat.userData.uniforms.uNight.value = look.night
     this.mats.propMat.userData.uniforms.uWind.value = look.wind
     this.mats.roadMat.userData.uniforms.uWet.value = look.wet
+    if (this._rimU) {
+      this._rimU.uRim.value = look.night * 0.9
+      this._rimU.uRimColor.value.copy(look.horizon).multiplyScalar(2.2).addScalar(0.05)
+    }
     this.extras.update(frameDt, this.camera, poser, car, this.course, look)
     this.traffic?.render(alpha, look.night)
     this._updateGhost()

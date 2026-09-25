@@ -69,12 +69,15 @@ for (const preset of ['low', 'high']) {
     const errors = collectErrors(page)
     await page.goto(`/?autotest&ff=8&preset=${preset}&s=2000`)
     await waitReady(page)
-    await page.waitForTimeout(15_000)
+    // measure steady state: skip shader compilation and the synchronous initial world build
+    await page.waitForTimeout(6_000)
+    await page.evaluate(() => window.__perf.reset())
+    await page.waitForTimeout(14_000)
     const st = await gameState(page)
     const b = budgets[preset]
     expect(st.perf.maxCalls).toBeLessThanOrEqual(b.calls)
     expect(st.perf.maxTriangles).toBeLessThanOrEqual(b.triangles)
-    expect(st.summary.upd95).toBeLessThan(b.updateMs95 * 4) // SwiftShader shares the CPU; keep a loose bound
+    expect(st.summary.upd95).toBeLessThan(b.updateMs95 * 3) // JS update (sim + streaming + HUD); SwiftShader shares the CPU
     expect(errors).toEqual([])
   })
 }

@@ -108,11 +108,15 @@ void main() {
 
   // stars
   if (uStars > 0.01 && y > 0.0) {
-    vec3 g = floor(d * 380.0);
+    vec3 sp = d * 700.0;
+    vec3 g = floor(sp);
     float h = hash13(g);
-    float star = step(0.9965, h) * (0.4 + 0.6 * hash13(g + 7.1));
+    // point-like: brightness falls off from a jittered position inside the cell
+    vec3 c = g + 0.25 + 0.5 * vec3(hash13(g + 1.3), hash13(g + 2.7), hash13(g + 4.1));
+    float pt = smoothstep(0.42, 0.0, length(sp - c));
+    float star = step(0.9955, h) * pt * (0.35 + 0.65 * hash13(g + 7.1));
     float tw = 0.75 + 0.25 * sin(uTime * 3.0 + h * 50.0);
-    col += vec3(star * tw * uStars * 2.2) * smoothstep(0.0, 0.25, y);
+    col += vec3(0.9, 0.95, 1.0) * star * tw * uStars * 1.6 * smoothstep(0.0, 0.25, y);
   }
 
   // sun / moon disc (dimmed in env bake to avoid fireflies)

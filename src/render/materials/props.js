@@ -38,18 +38,20 @@ float isWin = step(0.5, vEmit) * step(vEmit, 0.6);
 if (isWin > 0.5) {
   // procedural window grid for towers (aEmit = 0.55): frames by day, random lit rooms by night
   float hx = vLocal.x + vLocal.z;
-  vec2 cell = vec2(floor(hx / 2.6), floor(vLocal.y / 3.4));
-  vec2 f = vec2(fract(hx / 2.6), fract(vLocal.y / 3.4));
-  float pane = step(0.14, f.x) * step(f.x, 0.86) * step(0.2, f.y) * step(f.y, 0.84);
-  diffuseColor.rgb *= mix(1.45, 0.5, pane);
-  winLit = pane * step(0.42, pHash(cell)) * (0.6 + 0.4 * pHash(cell + 7.0));
+  vec2 cell = vec2(floor(hx / 1.7), floor(vLocal.y / 2.3));
+  vec2 f = vec2(fract(hx / 1.7), fract(vLocal.y / 2.3));
+  float pane = step(0.16, f.x) * step(f.x, 0.84) * step(0.24, f.y) * step(f.y, 0.82);
+  diffuseColor.rgb *= mix(1.4, 0.45, pane);
+  // sparse, varied occupancy (whole floors dark sometimes) so towers don't turn into white slabs
+  float floorOn = step(0.3, pHash(vec2(cell.y, 3.1)));
+  winLit = pane * floorOn * step(0.64, pHash(cell)) * (0.35 + 0.65 * pHash(cell + 7.0));
 }`,
       )
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.12, isWin * 0.8);')
       .replace(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
-totalEmissiveRadiance += isWin > 0.5 ? vec3(1.0, 0.82, 0.55) * winLit * uNight * 2.2 : diffuseColor.rgb * vEmit * uNight * 3.0;`,
+totalEmissiveRadiance += isWin > 0.5 ? vec3(1.0, 0.78, 0.5) * winLit * uNight * 1.1 : diffuseColor.rgb * vEmit * uNight * 3.0;`,
       )
   }
   mat.customProgramCacheKey = () => 'props-v1'
