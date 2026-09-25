@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { Backdrop } from './backdrop.js'
 import { Gantries } from './gantries.js'
 import { SpritePool, Precipitation } from './particles.js'
+import { SkidMarks } from './skids.js'
 import { hexLin } from './color.js'
 import { terrainContext } from './terrain.js'
 import { lerp, clamp } from '../core/math.js'
@@ -108,6 +109,10 @@ export class WorldExtras {
     this.smoke = new SpritePool(420, { atmo, scale: 520 })
     this.sparkPool = new SpritePool(220, { additive: true, atmo, scale: 260 })
     scene.add(this.smoke.points, this.sparkPool.points)
+    this.skids = new SkidMarks(scene, atmo)
+    this._wl = new THREE.Vector3()
+    this._wr = new THREE.Vector3()
+    this._right = new THREE.Vector3()
     this.precip = new Precipitation(1800)
     scene.add(this.precip.lines, this.precip.points)
 
@@ -135,6 +140,7 @@ export class WorldExtras {
 
   reset(route) {
     this.route = route
+    this.skids.clear()
     this.gantries.clear()
     const c = this.ctx(route.current)
     this.backdrop.current = null
@@ -215,6 +221,18 @@ export class WorldExtras {
         this._carVel.x * 0.35 + (Math.random() - 0.5) * 2, 0.6 + Math.random(), this._carVel.z * 0.35 + (Math.random() - 0.5) * 2,
         { life: dust ? 1.4 : 1.8, size0: 1.2, size1: dust ? 6 : 7.5, alpha: dust ? 0.4 : 0.32, color: col, drag: 1.8 })
     }
+    // skid marks from the rear tyres while sliding on tarmac
+    const sliding = (drifting && Math.abs(car.beta) > 0.12) || spin || (car.brake > 0.8 && car.v > 25)
+    const onTarmac = car.surface !== SURFACE.OFFROAD && car.yOff < 0.05
+    const roadY = fr0 => fr0.y + fr0.ny * car.x + 0.015
+    const fr0 = poser.frame
+    this._wl.set(-0.8, 0, 1.3).applyQuaternion(q).add(poser.position)
+    this._wr.set(0.8, 0, 1.3).applyQuaternion(q).add(poser.position)
+    this._wl.y = roadY(fr0) + (this._wl.y - poser.position.y) * 0
+    this._wr.y = this._wl.y
+    this._right.set(fr0.nx, 0, fr0.nz)
+    this.skids.update([this._wl, this._wr], this._right, sliding && onTarmac, drifting ? Math.min(1, Math.abs(car.beta) * 2.5) : 0.7)
+
     const L = look.sunColor
     const amb = look.horizon
     this.smoke.uniforms.uLight.value.set(amb.x * 0.9 + L.x * 0.25, amb.y * 0.9 + L.y * 0.25, amb.z * 0.9 + L.z * 0.25)
