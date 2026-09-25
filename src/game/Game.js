@@ -560,7 +560,9 @@ export class Game {
 
     const updateMs = performance.now() - t0 + this.loop.stepCost
     this.renderer.info.reset()
-    this.post.render(frameDt)
+    if (params.hide.length) for (const n of params.hide) { const o = this.scene.getObjectByName(n); if (o) o.visible = false }
+    if (params.nopost) this.renderer.render(this.scene, this.camera)
+    else this.post.render(frameDt)
     this.perf.frame(frameDt * 1000, updateMs, this.renderer)
     if (this.perf.el) {
       this.perf.extra.preset = `${this.preset.id} x${this.dynres.scale.toFixed(2)}`

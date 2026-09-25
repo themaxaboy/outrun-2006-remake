@@ -65,7 +65,7 @@ export function makeAsphalt(size = 512) {
       // aggregate stones: bright/dark speckles
       const r = rnd()
       const speck = r > 0.965 ? 0.22 : r < 0.02 ? -0.18 : 0
-      const v = 0.24 + 0.1 * (fine - 0.5) + 0.07 * (mid - 0.5) + 0.05 * (macro - 0.5) + speck * 0.6
+      const v = 0.3 + 0.1 * (fine - 0.5) + 0.07 * (mid - 0.5) + 0.05 * (macro - 0.5) + speck * 0.6
       albedo[i * 4] = Math.max(0, Math.min(255, v * 255 * 0.97))
       albedo[i * 4 + 1] = Math.max(0, Math.min(255, v * 255 * 0.98))
       albedo[i * 4 + 2] = Math.max(0, Math.min(255, v * 255 * 1.02))
@@ -75,7 +75,7 @@ export function makeAsphalt(size = 512) {
   }
   for (let i = 0; i < size * size; i++) {
     hr[i * 4] = Math.max(0, Math.min(255, height[i] * 200))
-    const rough = 0.82 + 0.14 * (height[i] - 0.5)
+    const rough = 0.9 + 0.12 * (height[i] - 0.5)
     hr[i * 4 + 1] = Math.max(0, Math.min(255, rough * 255))
     hr[i * 4 + 2] = 0
     hr[i * 4 + 3] = 255

@@ -86,7 +86,7 @@ void main() {
   float glow = pow(max(mu, 0.0), 6.0);
   float horizonBand = exp(-abs(y) * 6.0);
   col = mix(col, uFogSun, glow * horizonBand * 0.85);
-  col += uSunColor * (pow(max(mu, 0.0), 64.0) * 0.35 + pow(max(mu, 0.0), 8.0) * 0.06);
+  col += uSunColor * (pow(max(mu, 0.0), 64.0) * 0.22 + pow(max(mu, 0.0), 8.0) * 0.05);
   // below horizon
   col = mix(col, mix(uHorizon, uGround, 0.6), smoothstep(0.0, -0.08, y));
 
@@ -117,10 +117,10 @@ void main() {
 
   // sun / moon disc (dimmed in env bake to avoid fireflies)
   float disc = smoothstep(0.99955, 0.99975, mu);
-  float discI = mix(mix(40.0, 6.0, uMoon), 2.0, uEnvBake);
+  float discI = mix(mix(14.0, 4.0, uMoon), 1.5, uEnvBake);
   col += uSunColor * disc * discI * step(-0.02, y);
 
-  gl_FragColor = vec4(col, 1.0);
+  gl_FragColor = vec4(clamp(col, 0.0, 48.0), 1.0);
 }`
 
 export class SkyDome {

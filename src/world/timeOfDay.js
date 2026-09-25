@@ -3,44 +3,44 @@
 // front of the player the way the original's big skies did.
 export const TOD = {
   morning: {
-    sunEl: 14, sunAz: 55, sun: '#ffd9a8', sunI: 3.2, zenith: '#3f7fd6', horizon: '#bfd7ee', ground: '#6d7a6a', hemiI: 0.55,
-    fog: '#c3d6e8', fogSun: '#ffe2b8', fogDensity: 0.00042, exposure: 1.0, cloud: 0.35, cloudColor: '#ffffff', stars: 0, night: 0,
-    envI: 1.0, grade: { sat: 1.12, temp: 0.04, contrast: 1.05, lift: 0.0 }, bloom: 0.7,
+    sunEl: 16, sunAz: 55, sun: '#ffdcae', sunI: 3.3, zenith: '#2a6fd8', horizon: '#9fc6ee', ground: '#6d7a6a', hemiI: 0.55,
+    fog: '#c3d6e8', fogSun: '#ffe2b8', fogDensity: 0.0003, exposure: 1.0, cloud: 0.35, cloudColor: '#ffffff', stars: 0, night: 0,
+    envI: 1.0, grade: { sat: 1.06, temp: 0.04, contrast: 1.05, lift: 0.0 }, bloom: 0.7,
   },
   lateMorning: {
-    sunEl: 32, sunAz: 40, sun: '#fff0d6', sunI: 3.6, zenith: '#2f74d6', horizon: '#b7d3ef', ground: '#6d7a6a', hemiI: 0.6,
-    fog: '#bcd3ea', fogSun: '#fff0d8', fogDensity: 0.00038, exposure: 1.0, cloud: 0.3, cloudColor: '#ffffff', stars: 0, night: 0,
-    envI: 1.0, grade: { sat: 1.12, temp: 0.02, contrast: 1.06, lift: 0.0 }, bloom: 0.6,
+    sunEl: 32, sunAz: 40, sun: '#fff0d6', sunI: 3.6, zenith: '#2468d4', horizon: '#9cc4ee', ground: '#6d7a6a', hemiI: 0.6,
+    fog: '#bcd3ea', fogSun: '#fff0d8', fogDensity: 0.00028, exposure: 1.0, cloud: 0.3, cloudColor: '#ffffff', stars: 0, night: 0,
+    envI: 1.0, grade: { sat: 1.06, temp: 0.02, contrast: 1.06, lift: 0.0 }, bloom: 0.6,
   },
   noon: {
-    sunEl: 58, sunAz: 20, sun: '#fff6e8', sunI: 4.0, zenith: '#2366c9', horizon: '#aecdee', ground: '#707a6a', hemiI: 0.65,
-    fog: '#b4cde9', fogSun: '#fff4e2', fogDensity: 0.00036, exposure: 0.95, cloud: 0.28, cloudColor: '#ffffff', stars: 0, night: 0,
-    envI: 1.0, grade: { sat: 1.14, temp: 0.0, contrast: 1.08, lift: 0.0 }, bloom: 0.55,
+    sunEl: 58, sunAz: 20, sun: '#fff6e8', sunI: 4.0, zenith: '#1c5fcc', horizon: '#98c1ec', ground: '#707a6a', hemiI: 0.65,
+    fog: '#b4cde9', fogSun: '#fff4e2', fogDensity: 0.00026, exposure: 0.95, cloud: 0.28, cloudColor: '#ffffff', stars: 0, night: 0,
+    envI: 1.0, grade: { sat: 1.08, temp: 0.0, contrast: 1.08, lift: 0.0 }, bloom: 0.55,
   },
   afternoon: {
-    sunEl: 30, sunAz: -35, sun: '#ffe7c2', sunI: 3.6, zenith: '#2c6bcf', horizon: '#c4d6ea', ground: '#6f7466', hemiI: 0.6,
-    fog: '#c6d5e6', fogSun: '#ffe0b0', fogDensity: 0.0004, exposure: 1.0, cloud: 0.4, cloudColor: '#fff8ee', stars: 0, night: 0,
-    envI: 1.0, grade: { sat: 1.12, temp: 0.05, contrast: 1.06, lift: 0.0 }, bloom: 0.6,
+    sunEl: 30, sunAz: -35, sun: '#ffe7c2', sunI: 3.6, zenith: '#2463cc', horizon: '#a8c8ea', ground: '#6f7466', hemiI: 0.6,
+    fog: '#c6d5e6', fogSun: '#ffe0b0', fogDensity: 0.0003, exposure: 1.0, cloud: 0.4, cloudColor: '#fff8ee', stars: 0, night: 0,
+    envI: 1.0, grade: { sat: 1.06, temp: 0.05, contrast: 1.06, lift: 0.0 }, bloom: 0.6,
   },
   golden: {
     sunEl: 11, sunAz: -20, sun: '#ffb36b', sunI: 3.0, zenith: '#3a62a8', horizon: '#f2c48f', ground: '#6b5f50', hemiI: 0.5,
     fog: '#e8c29a', fogSun: '#ffb870', fogDensity: 0.00048, exposure: 1.05, cloud: 0.45, cloudColor: '#ffd6a8', stars: 0, night: 0.1,
-    envI: 0.95, grade: { sat: 1.18, temp: 0.12, contrast: 1.08, lift: 0.01 }, bloom: 0.8,
+    envI: 0.95, grade: { sat: 1.12, temp: 0.12, contrast: 1.08, lift: 0.01 }, bloom: 0.8,
   },
   sunset: {
     sunEl: 3.5, sunAz: -8, sun: '#ff8a4a', sunI: 2.6, zenith: '#2d3f7a', horizon: '#ff9e63', ground: '#5a4a48', hemiI: 0.42,
     fog: '#e99a72', fogSun: '#ff8f4a', fogDensity: 0.00052, exposure: 1.1, cloud: 0.5, cloudColor: '#ffb07a', stars: 0.05, night: 0.35,
-    envI: 0.9, grade: { sat: 1.22, temp: 0.16, contrast: 1.1, lift: 0.015 }, bloom: 1.0,
+    envI: 0.9, grade: { sat: 1.16, temp: 0.16, contrast: 1.1, lift: 0.015 }, bloom: 1.0,
   },
   dusk: {
-    sunEl: -2, sunAz: 10, sun: '#ff7a5a', sunI: 1.1, zenith: '#1d2552', horizon: '#c86a7a', ground: '#3a3444', hemiI: 0.35,
-    fog: '#7c5a78', fogSun: '#ff8a6a', fogDensity: 0.00055, exposure: 1.25, cloud: 0.45, cloudColor: '#d88a9a', stars: 0.25, night: 0.75,
-    envI: 0.8, grade: { sat: 1.2, temp: 0.02, contrast: 1.1, lift: 0.02 }, bloom: 1.2,
+    sunEl: -1.5, sunAz: 10, sun: '#ff9a6a', sunI: 1.2, zenith: '#18265e', horizon: '#b77a8e', ground: '#34364a', hemiI: 0.35,
+    fog: '#7c6a88', fogSun: '#ffa070', fogDensity: 0.0005, exposure: 1.3, cloud: 0.4, cloudColor: '#c890a8', stars: 0.25, night: 0.75,
+    envI: 0.85, grade: { sat: 1.05, temp: -0.02, contrast: 1.08, lift: 0.02 }, bloom: 1.0,
   },
   night: {
     sunEl: 35, sunAz: 150, moon: true, sun: '#9fb4ff', sunI: 0.55, zenith: '#050a1c', horizon: '#1b2240', ground: '#10121a', hemiI: 0.28,
     fog: '#141a33', fogSun: '#2a3160', fogDensity: 0.0006, exposure: 1.6, cloud: 0.25, cloudColor: '#39426a', stars: 1, night: 1,
-    envI: 0.7, grade: { sat: 1.15, temp: -0.06, contrast: 1.12, lift: 0.015 }, bloom: 1.5,
+    envI: 0.7, grade: { sat: 1.09, temp: -0.06, contrast: 1.12, lift: 0.015 }, bloom: 1.5,
   },
   starlight: {
     sunEl: 20, sunAz: -120, moon: true, sun: '#b2c2ff', sunI: 0.45, zenith: '#03061a', horizon: '#1a1a3a', ground: '#0e0d16', hemiI: 0.25,

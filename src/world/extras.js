@@ -23,6 +23,7 @@ uniform vec3 uZenith;
 uniform vec3 uHorizon;
 uniform vec3 uAFogSun;
 uniform vec3 uDeep;
+uniform vec3 uShallow;
 uniform float uTime;
 uniform sampler2D uNoise;
 uniform float uAFogDensity;
@@ -52,12 +53,16 @@ void main() {
   sky = mix(sky, uAFogSun, pow(mu, 6.0) * exp(-r.y * 6.0) * 0.85);
   vec3 spec = uSunColor * (pow(mu, 700.0) * 9.0 + pow(mu, 60.0) * 0.18) * step(0.0, uSunDir.y);
   float amb = dot(uHorizon, vec3(0.3, 0.5, 0.2));
-  vec3 body = uDeep * (0.25 + 0.75 * amb) * (0.6 + 0.4 * max(uSunDir.y, 0.0));
-  vec3 col = mix(body, sky, fres) + spec;
+  vec3 deep = uDeep * (0.3 + 0.7 * amb) * (0.55 + 0.45 * max(uSunDir.y, 0.0));
+  vec3 shallow = uShallow * (0.3 + 0.7 * amb) * (0.55 + 0.45 * max(uSunDir.y, 0.0));
+  vec3 body = mix(shallow, deep, smoothstep(30.0, 500.0, dist));
+  // subsurface-ish brightening on wave crests facing the sun
+  body += shallow * 0.25 * max(0.0, h0 - 0.9) * max(uSunDir.y, 0.0);
+  vec3 col = mix(body, sky * mix(vec3(1.0), uShallow * 2.5, 0.15), fres * 0.8) + spec;
   float famt = 1.0 - exp(-dist * uAFogDensity * 0.7);
   famt = max(famt, smoothstep(uAFarFade.y * 1.2, uAFarFade.y * 2.4, dist));
   col = mix(col, mix(uHorizon, uAFogSun, pow(max(dot(-v, uSunDir), 0.0), 6.0) * 0.85), famt);
-  gl_FragColor = vec4(col, 1.0);
+  gl_FragColor = vec4(clamp(col, 0.0, 48.0), 1.0);
 }`
 
 export class WorldExtras {
@@ -70,7 +75,7 @@ export class WorldExtras {
     this.waterUniforms = {
       uSunDir: u.uSunDir, uSunColor: u.uSunColor, uZenith: u.uZenith, uHorizon: u.uHorizon, uAFogSun: u.uFogSunColor,
       uAFogDensity: u.uFogDensity, uAFarFade: u.uFarFade, uTime: u.uTime,
-      uDeep: { value: new THREE.Vector3(0.02, 0.12, 0.2) }, uNoise: { value: atmo.cloudTex },
+      uDeep: { value: new THREE.Vector3(0.02, 0.12, 0.2) }, uShallow: { value: new THREE.Vector3(0.05, 0.4, 0.45) }, uNoise: { value: atmo.cloudTex },
     }
     this.water = new THREE.Mesh(
       new THREE.PlaneGeometry(14000, 14000, 1, 1).rotateX(-Math.PI / 2),
@@ -79,6 +84,7 @@ export class WorldExtras {
     this.water.frustumCulled = false
     this.water.renderOrder = -2
     this.water.visible = false
+    this.water.name = 'water'
     scene.add(this.water)
     this.waterLevel = -1000
     this.waterTarget = -1000
@@ -88,6 +94,7 @@ export class WorldExtras {
     this.ground = new THREE.Mesh(new THREE.PlaneGeometry(14000, 14000).rotateX(-Math.PI / 2), this.groundMat)
     this.ground.frustumCulled = false
     this.ground.renderOrder = -3
+    this.ground.name = 'ground'
     scene.add(this.ground)
     this.groundLevel = 0
     this.groundTarget = 0
@@ -147,7 +154,9 @@ export class WorldExtras {
     this.waterTarget = c.waterLevel
     if (c.biome.water) {
       const d = hexLin(c.biome.water.color)
+      const sh = hexLin(c.biome.water.shallow)
       this.waterUniforms.uDeep.value.set(d[0], d[1], d[2])
+      this.waterUniforms.uShallow.value.set(sh[0], sh[1], sh[2])
     }
     this.groundTarget = c.farLevel
     const g = c.biome.palette[c.kind === 'canyon' ? 'sand' : c.kind === 'city' ? 'pavement' : 'grass']

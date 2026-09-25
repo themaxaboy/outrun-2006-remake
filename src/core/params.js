@@ -17,4 +17,6 @@ export const params = {
   noTraffic: q.has('notraffic'),
   seed: q.get('seed') || null,
   mode: q.get('mode') || 'outrun',
+  nopost: q.has('nopost'),
+  hide: (q.get('hide') || '').split(',').filter(Boolean), // debug: hide scene objects by name
 }

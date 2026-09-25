@@ -24,10 +24,10 @@ export class PostFX {
     composer.addPass(new RenderPass(this.scene, this.camera))
     this.bloom = new BloomEffect({
       mipmapBlur: true,
-      luminanceThreshold: 0.92,
-      luminanceSmoothing: 0.25,
-      intensity: 0.7,
-      radius: 0.72,
+      luminanceThreshold: 1.0,
+      luminanceSmoothing: 0.3,
+      intensity: 0.6,
+      radius: 0.6,
       levels: preset.bloomLevels || 6,
     })
     if (preset.bloomHalf) this.bloom.resolution.scale = 0.5

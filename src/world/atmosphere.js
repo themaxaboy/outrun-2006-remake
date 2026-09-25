@@ -184,7 +184,8 @@ export class Atmosphere {
     const hm = Math.max(hc.r, hc.g, hc.b) || 1
     hc.multiplyScalar(1 / hm)
     this.hemi.groundColor.setRGB(L.ground.x, L.ground.y, L.ground.z)
-    this.hemi.intensity = L.hemiI
+    // IBL (scene.environment) already provides sky ambient; the hemi light only adds a little ground bounce
+    this.hemi.intensity = L.hemiI * 0.3
     this.scene.environmentIntensity = L.envI
   }
 
@@ -252,6 +253,8 @@ uniform vec2 uAFarFade;`)
   float sunAmt = pow(max(dot(fdir, uSunDir), 0.0), 6.0);
   vec3 fcol = mix(uAFogColor, uAFogSun, sunAmt * 0.85);
   gl_FragColor.rgb = mix(gl_FragColor.rgb, fcol, clamp(famt, 0.0, 1.0));
+  // keep HDR values finite for the half-float post chain (razor-sharp clearcoat highlights can exceed fp16)
+  gl_FragColor.rgb = clamp(gl_FragColor.rgb, 0.0, 48.0);
 }
 #include <fog_fragment>`)
     }
