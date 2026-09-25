@@ -1,5 +1,7 @@
 # Coast 2 Coast: an OutRun 2006 fan remake for the web
 
+### ▶ [Play now in your browser](https://themaxaboy.github.io/outrun-2006-remake/)
+
 An arcade racer you play in the browser. It's a tribute to SEGA's **OutRun 2006: Coast 2 Coast**:
 
 - The 15-stage branching pyramid, where you pick left or right at every fork.
@@ -10,6 +12,21 @@ An arcade racer you play in the browser. It's a tribute to SEGA's **OutRun 2006:
 Everything is built from scratch for the web and **generated in code**: roads, terrain, scenery, the four original cars, the sky, and the synthesized soundtrack. The build ships with no copyrighted assets.
 
 > This is a non-commercial fan project. It is not affiliated with or endorsed by SEGA. It contains no SEGA or Ferrari assets, music, logos or trademarks. Car designs, stage names and music are original.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/sunset-coast.jpg" alt="Aurora GT-R at sunset on the Sunset Bay coast road, palms silhouetted against the sun"><br><sub><b>Sunset Bay</b>: golden-hour coast road, the Aurora GT-R at 200 km/h.</sub></td>
+    <td width="50%"><img src="docs/screenshots/drift.jpg" alt="Nebula X powersliding through an alpine bend with tyre smoke"><br><sub><b>Summit Road</b>: a brake-tap powerslide with tyre smoke through a mountain bend.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/fork.jpg" alt="Vento S approaching the fork gantry with signs for Mirror Lake and Red Rock Pass"><br><sub><b>The fork</b>: pick left for Mirror Lake or right for Red Rock Pass.</sub></td>
+    <td width="50%"><img src="docs/screenshots/night-city.jpg" alt="Nebula X on a rainy night in Rain City with lit skyscrapers"><br><sub><b>Rain City</b>: the final stage at night in the rain.</sub></td>
+  </tr>
+</table>
+
+Screenshots come from the real game, captured headlessly with `npm run screenshots` (build and `npm run preview` first).
 
 ## Features
 
@@ -124,6 +141,8 @@ src/
 - **Rendering.** three.js WebGL2 with pmndrs `postprocessing`. The sky and fog share one atmosphere model so distant terrain melts into the horizon. The sky environment (IBL) is re-baked as stages blend.
 
 ## ภาษาไทย (สรุป)
+
+**▶ เล่นได้เลยที่ https://themaxaboy.github.io/outrun-2006-remake/**
 
 เกมแข่งรถบนเว็บที่ทำเป็นบรรณาการให้ **OutRun 2006: Coast 2 Coast** ทุกอย่างสร้างด้วยโค้ดทั้งหมด ได้แก่ ถนน ฉาก รถ 4 คันที่ออกแบบเอง ท้องฟ้า และเพลงสังเคราะห์ ไม่มีไฟล์ลิขสิทธิ์ของ SEGA หรือ Ferrari
 
