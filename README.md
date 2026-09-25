@@ -77,6 +77,19 @@ The e2e suite runs headless Chromium on SwiftShader (software WebGL). It checks 
 4. Open `?bench&preset=high` (or `ultra`) to watch the deterministic autopilot fly-through and compare against `bench/budgets.json`.
 5. On a phone on the same network, open the `--host` URL. The auto preset should be Low or Medium, and touch controls appear.
 
+### Measured render budgets (headless proxy)
+
+From `npm run bench`: autopilot fly-through on stages 0-0, 2-1 and 4-1, all passes included.
+
+| Preset | View distance | Max draw calls (budget) | Max triangles (budget) | JS update p95 |
+|---|---|---|---|---|
+| Low | 820 m | 74 (140) | 113k (450k) | ≤ 3.8 ms |
+| Medium | 1100 m | 110 (220) | 326k (900k) | ≤ 3.2 ms |
+| High | 1500 m | 132 (300) | 424k (1.6M) | ≤ 3.5 ms |
+| Ultra | 2000 m | 154 (420) | 536k (3M) | ≤ 6.6 ms |
+
+Each player car is 10 draw calls and 55–63k triangles, or about 14k on Low.
+
 ### Debug URL parameters
 
 | Parameter | Effect |
