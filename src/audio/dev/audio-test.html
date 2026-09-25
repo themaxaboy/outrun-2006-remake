@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Audio Test Bench</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #10151c;
+        --panel: #19212b;
+        --text: #e8edf2;
+        --muted: #8b98a8;
+        --accent: #ffb400;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.4 system-ui, sans-serif;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0 0 12px;
+      }
+      section {
+        background: var(--panel);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      button {
+        background: #263241;
+        color: var(--text);
+        border: 1px solid #34465a;
+        border-radius: 6px;
+        padding: 6px 10px;
+        margin: 2px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--accent);
+      }
+      label {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        margin-right: 14px;
+      }
+      pre {
+        white-space: pre-wrap;
+        font-size: 12px;
+        max-height: 420px;
+        overflow: auto;
+      }
+      #status {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>OutRun remake — audio test bench</h1>
+    <p id="status">Audio locked — click “Unlock”.</p>
+    <section>
+      <h2>Context</h2>
+      <button id="unlock">Unlock</button>
+      <button id="pause">Pause</button>
+      <button id="resume">Resume</button>
+      <label>master <input id="vMaster" type="range" min="0" max="1" step="0.01" value="0.9" /></label>
+      <label>music <input id="vMusic" type="range" min="0" max="1" step="0.01" value="0.7" /></label>
+      <label>sfx <input id="vSfx" type="range" min="0" max="1" step="0.01" value="0.85" /></label>
+      <label>engine <input id="vEngine" type="range" min="0" max="1" step="0.01" value="0.8" /></label>
+    </section>
+    <section>
+      <h2>Music</h2>
+      <div id="tracks"></div>
+      <button id="stopMusic">Stop</button>
+      <button id="duck">Duck</button>
+      <label>user files <input id="files" type="file" accept="audio/*" multiple /></label>
+      <div id="userTracks"></div>
+      <span id="musicTime"></span>
+    </section>
+    <section>
+      <h2>Engine</h2>
+      <label
+        >car
+        <select id="car">
+          <option value="aurora">V8 (Aurora)</option>
+          <option value="vento">V6 (Vento)</option>
+          <option value="stradale">V12 (Stradale)</option>
+          <option value="nebula">V8 hybrid (Nebula)</option>
+        </select></label
+      >
+      <button id="engStart">Start</button>
+      <button id="engStop">Stop</button>
+      <br />
+      <label>rpm <input id="rpm" type="range" min="0" max="1" step="0.001" value="0" /></label>
+      <label>throttle <input id="thr" type="range" min="0" max="1" step="0.01" value="0" /></label>
+      <label>drift <input id="drift" type="range" min="0" max="1" step="0.01" value="0" /></label>
+      <label>speed <input id="speed" type="range" min="0" max="90" step="1" value="0" /></label>
+      <label>rumble <input id="rumble" type="range" min="0" max="1" step="0.01" value="0" /></label>
+      <label>offroad <input id="offroad" type="range" min="0" max="1" step="0.01" value="0" /></label>
+      <label><input id="limiter" type="checkbox" /> limiter</label>
+      <label
+        >camera
+        <select id="camera">
+          <option>chase</option>
+          <option>far</option>
+          <option>bumper</option>
+        </select></label
+      >
+      <button id="autoRev">Auto rev demo</button>
+    </section>
+    <section>
+      <h2>SFX</h2>
+      <div id="sfx"></div>
+    </section>
+    <section>
+      <h2>Self-test</h2>
+      <button id="selftest">Run self-test</button>
+      <button id="wav">Download 30 s WAV of selected track</button>
+      <select id="wavTrack"></select>
+      <pre id="report"></pre>
+    </section>
+    <script type="module" src="./audio-test.js"></script>
+  </body>
+</html>

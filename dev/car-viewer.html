@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Car Viewer (dev)</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #15171b; color: #e8eaee; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; }
+      canvas { display: block; width: 100%; height: 100%; }
+      #info { position: fixed; left: 10px; top: 8px; padding: 6px 9px; background: rgba(0, 0, 0, 0.45); border-radius: 6px; white-space: pre; pointer-events: none; }
+      #help { position: fixed; right: 10px; bottom: 8px; opacity: 0.6; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <div id="info">loading…</div>
+    <div id="help">?car=aurora|vento|stradale|nebula &amp;color=%23c8102e &amp;finish=metallic|pearl|matte|solid &amp;quality=high|low · ?traffic=1 · &amp;view=front34|rear34|side|front|rear|top &amp;spin=0 &amp;lights=1 &amp;brake=1 &amp;steer=0.3</div>
+    <script type="module" src="./car-viewer.js"></script>
+  </body>
+</html>
