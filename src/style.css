@@ -23,3 +23,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1026; col
 .tc-gas { background: rgba(20,180,90,.35); grid-row: 1 / 3; grid-column: 2; height: 184px; border-radius: 44px; }
 .tc-brake { background: rgba(220,40,40,.35); }
 .tc-drift { background: rgba(40,140,255,.35); }
+@media (max-height: 520px) {
+  .tc-btn { width: 72px; height: 72px; font-size: 12px; }
+  .tc-gas { height: 156px; border-radius: 38px; }
+  .tc-knob { width: 70px; height: 70px; }
+}

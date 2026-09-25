@@ -73,3 +73,15 @@
 }
 .hud-banner.small { top: 22%; }
 .hud-banner.small .big { font-size: clamp(22px, 4vw, 42px); }
+/* touch layout: keep the corners free for the on-screen controls */
+.hud.touch .hud-speedo { right: auto; left: 50%; bottom: max(6px, env(safe-area-inset-bottom)); transform: translateX(-50%) scale(.72); transform-origin: 50% 100%; }
+.hud.touch .hud-progress { left: 16px; bottom: auto; top: calc(max(12px, env(safe-area-inset-top)) + 128px); width: min(26vw, 220px); }
+@media (max-height: 520px) {
+  .hud-time .time-val { font-size: 52px; }
+  .hud .val { font-size: 17px; }
+  .hud .lbl { font-size: 11px; }
+  .hud-left .stage-name { font-size: 15px; }
+  .hud-left .lap { font-size: 13px; }
+  .pyr { width: 104px; height: 80px; }
+  .hud.touch .hud-progress { top: calc(max(8px, env(safe-area-inset-top)) + 100px); }
+}

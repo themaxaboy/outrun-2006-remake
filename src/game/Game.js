@@ -331,6 +331,7 @@ export class Game {
     this._lastCount = null
     this.hud.show(true)
     this.input.showTouch(true)
+    this.hud.setTouch(this.input.touch.visible)
     if (this.audio) {
       await this.audio.unlock?.()
       this.audio.startEngine?.(this.carDef)

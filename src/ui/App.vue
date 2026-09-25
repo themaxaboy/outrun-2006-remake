@@ -63,5 +63,5 @@ onUnmounted(() => { offs.forEach((f) => f()); clearInterval(deviceTimer) })
 .bar { width: 280px; height: 6px; margin: 0 auto; background: rgba(255,255,255,.15); border-radius: 3px; overflow: hidden; }
 .fill { height: 100%; background: linear-gradient(90deg, #ff6a00, #ffd84a); transform-origin: 0 50%; transition: transform .2s; }
 .lbl { font-size: 12px; opacity: .7; letter-spacing: .1em; }
-.pause-btn { position: fixed; top: calc(max(12px, env(safe-area-inset-top)) + 120px); right: 16px; width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); background: rgba(0,0,0,.35); color: #fff; font-size: 14px; z-index: 11; }
+.pause-btn { position: fixed; top: max(12px, env(safe-area-inset-top)); right: calc(50% - 150px); width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); background: rgba(0,0,0,.35); color: #fff; font-size: 14px; z-index: 11; }
 </style>

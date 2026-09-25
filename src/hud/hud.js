@@ -76,6 +76,8 @@ export class HUD {
     this.pyr.set(visited, current)
   }
 
+  setTouch(v) { this.el.classList.toggle('touch', v) }
+
   setTransmission(manual) { this.setText('trans', this.$.trans, manual ? 'MT' : 'AT') }
 
   banner(big, small = '', seconds = 2.2, cls = '') {
