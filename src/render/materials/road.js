@@ -16,7 +16,7 @@ export function createRoadMaterial(tex) {
     bumpScale: 0.25,
     roughness: 1,
     metalness: 0,
-    envMapIntensity: 0.6,
+    envMapIntensity: 0.35,
   })
   const uniforms = { uWet: { value: 0 }, uTime: { value: 0 } }
   mat.userData.uniforms = uniforms

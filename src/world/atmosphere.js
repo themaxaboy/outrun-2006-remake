@@ -256,7 +256,7 @@ uniform vec2 uAFarFade;`)
   vec3 fcol = mix(uAFogColor, uAFogSun, sunAmt * 0.85);
   gl_FragColor.rgb = mix(gl_FragColor.rgb, fcol, clamp(famt, 0.0, 1.0));
   // keep HDR values finite for the half-float post chain (razor-sharp clearcoat highlights can exceed fp16)
-  gl_FragColor.rgb = clamp(gl_FragColor.rgb, 0.0, 48.0);
+  gl_FragColor.rgb = clamp(gl_FragColor.rgb, 0.0, 24.0);
 }
 #include <fog_fragment>`)
     }

@@ -18,5 +18,6 @@ export const params = {
   seed: q.get('seed') || null,
   mode: q.get('mode') || 'outrun',
   nopost: q.has('nopost'),
+  v0: q.has('v') ? Number(q.get('v')) / 3.6 : 0, // debug start speed (km/h)
   hide: (q.get('hide') || '').split(',').filter(Boolean), // debug: hide scene objects by name
 }

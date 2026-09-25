@@ -89,7 +89,7 @@ export class Game {
     this.renderer = renderer
     this.gpu = gpuInfo(renderer)
 
-    const presetId = params.preset || this.settings.preset || detectPreset(renderer)
+    const presetId = params.preset || this.settings.preset || this.settings.autoPreset || detectPreset(renderer)
     this.preset = PRESETS[presetId] || PRESETS.medium
     this.dynres = new DynamicResolution(this.preset)
     this.dynres.enabled = !params.autotest && !params.bench
@@ -238,10 +238,10 @@ export class Game {
     this.resize()
   }
 
-  setPreset(id) {
+  setPreset(id, { save = true } = {}) {
     if (!PRESETS[id] || id === this.preset.id) return
     this.preset = PRESETS[id]
-    this.saveSettings({ preset: id })
+    if (save) this.saveSettings({ preset: id })
     this.post.build(this.preset)
     this._applyPreset()
     this.rig && this._setRig(this.carDef, this._color, this._finish)
@@ -323,6 +323,7 @@ export class Game {
       autopilotRoute,
       startS: params.startS || 20,
     })
+    if (params.v0) { this.car.v = params.v0; this.car.gear = 5 }
     this.chunks.update(this.route, this.car.s, this.camera.position, Infinity)
     await this._setupGhost()
     this.state = 'countdown'
@@ -724,6 +725,37 @@ export class Game {
     }
     const ns = this.dynres.sample(frameDt * 1000, now)
     if (ns !== null) this.resize()
+    this._autoTune(frameDt)
+  }
+
+  /**
+   * First-run auto-tune: while the title attract drive runs, measure p90 frame time; if the GPU
+   * can't hold the display refresh at this preset, step down (at most twice). Skipped when the
+   * player (or URL) picked a preset.
+   */
+  _autoTune(frameDt) {
+    if (this._tuneDone || this.settings.preset || params.preset || params.autotest || params.bench) return
+    if (this.state !== 'attract') return
+    const t = (this._tune ||= { n: 0, samples: [], drops: 0 })
+    t.n++
+    if (t.n < 90) return // skip shader warm-up / streaming burst
+    t.samples.push(frameDt * 1000)
+    if (t.samples.length < 240) return
+    const sorted = [...t.samples].sort((a, b) => a - b)
+    const p90 = sorted[Math.floor(sorted.length * 0.9)]
+    const target = Math.max(this.dynres.refresh || 16.7, 1000 / 60)
+    const order = ['low', 'medium', 'high', 'ultra']
+    const i = order.indexOf(this.preset.id)
+    if (p90 > target * 1.3 && i > 0 && t.drops < 2) {
+      console.info(`[auto-tune] p90 ${p90.toFixed(1)} ms > ${(target * 1.3).toFixed(1)} ms → ${order[i - 1]}`)
+      this.setPreset(order[i - 1], { save: false })
+      this.saveSettings({ autoPreset: order[i - 1] })
+      t.drops++
+      t.n = 0
+      t.samples.length = 0
+      return
+    }
+    this._tuneDone = true
   }
 
   _syncVisuals(alpha, frameDt) {

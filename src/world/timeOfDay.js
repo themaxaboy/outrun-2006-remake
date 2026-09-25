@@ -3,7 +3,7 @@
 // front of the player the way the original's big skies did.
 export const TOD = {
   morning: {
-    sunEl: 16, sunAz: 55, sun: '#ffdcae', sunI: 3.3, zenith: '#2a6fd8', horizon: '#9fc6ee', ground: '#6d7a6a', hemiI: 0.55,
+    sunEl: 22, sunAz: 55, sun: '#ffdcae', sunI: 3.3, zenith: '#2a6fd8', horizon: '#9fc6ee', ground: '#6d7a6a', hemiI: 0.55,
     fog: '#c3d6e8', fogSun: '#ffe2b8', fogDensity: 0.0003, exposure: 1.0, cloud: 0.35, cloudColor: '#ffffff', stars: 0, night: 0,
     envI: 1.0, grade: { sat: 1.06, temp: 0.04, contrast: 1.05, lift: 0.0 }, bloom: 0.7,
   },

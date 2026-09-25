@@ -37,7 +37,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   g = (g - 0.5) * contrast + 0.5;
   g = g + lift * (1.0 - g);
   vec2 q = uv - 0.5;
-  float v = 1.0 - vignette * smoothstep(0.35, 0.85, length(q * vec2(1.1, 1.0)));
+  float v = 1.0 - vignette * smoothstep(0.45, 0.95, length(q * vec2(1.1, 1.0)));
   g *= v;
   g = mix(g, vec3(1.0), flash);
   c = pow(max(g, 0.0), vec3(2.2));
@@ -53,7 +53,7 @@ export class FinishEffect extends Effect {
         ['contrast', new Uniform(1.05)],
         ['temp', new Uniform(0)],
         ['lift', new Uniform(0)],
-        ['vignette', new Uniform(0.35)],
+        ['vignette', new Uniform(0.22)],
         ['flash', new Uniform(0)],
       ]),
     })
