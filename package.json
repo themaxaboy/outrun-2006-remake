@@ -2,7 +2,7 @@
   "name": "outrun-2006-remake",
   "version": "0.1.0",
   "private": true,
-  "description": "Fan-made web remake inspired by OutRun 2006: Coast 2 Coast \u2014 original assets, procedural world, arcade drift.",
+  "description": "Fan-made web remake inspired by OutRun 2006: Coast 2 Coast — original assets, procedural world, arcade drift.",
   "type": "module",
   "scripts": {
     "dev": "vite",
